@@ -4,6 +4,9 @@ from download_card import fetch_card, save_card_json
 from printer import _image_url_to_data_url, send_print_job
 
 
+LINE_WIDTH = 48  # effective chars per line at normal text size
+
+
 def _canonicalize_string(s: str) -> str:
     """Convert Unicode characters to canonical ASCII forms.
     
@@ -105,11 +108,21 @@ class Face:
         flavor_text_style = {"font": "b", "normal_textsize": True}
         counter_style = {"align": "right", "bold": True, "double_width": True, "double_height": True, "normal_textsize": True}
 
-        LINE_WIDTH = 48  # effective chars per line at normal text size
-
         blocks = []
 
-        name_line = f"{self.name:<{LINE_WIDTH - len(self.mana_cost)}}{self.mana_cost}" if self.mana_cost else self.name
+        if self.mana_cost:
+            mana_len = len(self.mana_cost)
+            position = len(self.name) % LINE_WIDTH
+            remaining = LINE_WIDTH - position
+            # If the mana cost (plus at least one space) fits on the current line,
+            # right-align it there; otherwise push it to the end of the next line.
+            if remaining >= mana_len + 1:
+                padding = remaining - mana_len
+            else:
+                padding = remaining + LINE_WIDTH - mana_len
+            name_line = self.name + " " * padding + self.mana_cost
+        else:
+            name_line = self.name
         blocks.append({"type": "text", "text": name_line, "style": typeline_style})
         if self.cropped_image:
             blocks.append({"type": "image", "image": _image_url_to_data_url(self.cropped_image), "center": True})
