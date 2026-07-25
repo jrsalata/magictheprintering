@@ -149,7 +149,6 @@ def send_print_job(payload: dict[str, Any], timeout: int = 100) -> dict[str, Any
 	except URLError as err:
 		raise RuntimeError(f"Failed to connect to printer API: {err.reason}") from err
 
-
 if __name__ == "__main__":
 	# Example usage
 	payload = build_hello_world_blocks("https://cards.scryfall.io/art_crop/front/d/e/de7a150b-1b0d-4928-a2cc-80a4b7412350.jpg?1783904837")
