@@ -1,0 +1,30 @@
+{
+  "blocks": [
+    {
+      "type": "text",
+      "text": "HTTP Server Error"
+    },
+    {
+      "type": "divider",
+      "style": {
+        "double_width": true
+      }
+    },
+    {
+      "type": "text",
+      "text": "Upstream service returned HTTP {{status}}"
+    },
+    {
+      "type": "text",
+      "text": "Source: {{source}}"
+    },
+    {
+      "type": "text",
+      "text": "Details: {{details}}"
+    },
+    {
+      "type": "text",
+      "text": "{{timestamp}}"
+    }
+  ]
+}

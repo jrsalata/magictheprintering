@@ -1,0 +1,22 @@
+{
+  "blocks": [
+    {
+      "type": "title",
+      "style": {
+        "align": "center"
+      },
+      "text": "(o_O)"
+    },
+    {
+      "type": "title",
+      "style": {
+        "font": "b"
+      },
+      "text": "HTTP 404: Not Found"
+    },
+    {
+      "type": "text",
+      "text": "Huh...\nWe appear to be lost...\nI'll have to fire the   devs for this one"
+    }
+  ]
+}

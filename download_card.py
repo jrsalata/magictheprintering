@@ -6,6 +6,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
+from http_errors import HttpRequestError
 
 SCRYFALL_FUZZY_URL = "https://api.scryfall.com/cards/named?fuzzy="
 
@@ -35,7 +36,12 @@ def fetch_card(card_name: str) -> dict:
         except (json.JSONDecodeError, ValueError):
             details = None
         message = details or f"HTTP error {err.code}"
-        raise RuntimeError(f"Scryfall request failed: {message}") from err
+        raise HttpRequestError(
+            source="scryfall",
+            status_code=err.code,
+            details=message,
+            url=url,
+        ) from err
     except URLError as err:
         raise RuntimeError(f"Network error while calling Scryfall: {err.reason}") from err
 

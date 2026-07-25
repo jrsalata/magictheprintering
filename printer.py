@@ -6,6 +6,8 @@ Environment variables:
 - PRINTER_PASSWORD
 """
 
+from __future__ import annotations
+
 import base64
 from io import BytesIO
 import json
@@ -15,6 +17,8 @@ from PIL import Image
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+
+from http_errors import HttpRequestError
 
 
 def _image_file_to_data_url(image_path: str) -> str:
@@ -152,7 +156,12 @@ def send_print_job(payload: dict[str, Any], timeout: int = 100) -> dict[str, Any
 				}
 	except HTTPError as err:
 		details = err.read().decode("utf-8", errors="replace")
-		raise RuntimeError(f"Printer API HTTP {err.code}: {details}") from err
+		raise HttpRequestError(
+			source="printer_api",
+			status_code=err.code,
+			details=details,
+			url=endpoint,
+		) from err
 	except URLError as err:
 		raise RuntimeError(f"Failed to connect to printer API: {err.reason}") from err
 
