@@ -1,7 +1,7 @@
 from flask import Flask, request
 from markupsafe import escape
 
-from printer import build_hello_world_blocks, send_print_job, build_message, send_print_momir
+from printer import build_hello_world_blocks, send_print_job, build_message, send_print_momir, send_print_discord
 from fortune import fortune
 
 app = Flask(__name__)
@@ -18,6 +18,13 @@ PAGE = """<!doctype html>
   <input id="mana_value" name="mana_value" type="mana_value" step="any" required>
   <button type="submit">I'm Feeling Lucky</button>
 </form>
+<form method="post" action="/discord">
+  <label>
+    <input type="checkbox" name="illegal_cards" value="enabled" checked>
+    Include illegal cards
+  </label>
+  <input type="submit" value="My little discord">
+</form>
 <p>{message}</p>
 """
 
@@ -25,10 +32,10 @@ PAGE = """<!doctype html>
 @app.route("/", methods=["GET", "POST"])
 def print_page():
     message = ""
+    sent = False
     if request.method == "POST":
         try:
             action = request.form.get("action")
-            sent = False
             if action == "hello":
                 send_print_job(build_hello_world_blocks())
                 sent = True
@@ -58,6 +65,16 @@ def submit_momir():
         message = f"Printing random creature with mana value {mana_value}"
     return PAGE.format(message=escape(message))
 
+@app.route("/discord", methods=["POST"])
+def submit_discord():
+    include_illegal = 'enabled' in request.form.getlist('illegal_cards')
+    if include_illegal:
+        send_print_discord(build_message(f"TODO: print random non-land including illegal cards for discord"))
+        message = "Printing random non-land including illegal cards for discord"
+    else:
+        send_print_discord(build_message(f"TODO: print random non-land excluding illegal cards for discord"))
+        message = "Printing random non-land excluding illegal cards for discord"
+    return PAGE.format(message=escape(message))
 
 if __name__ == "__main__":
     app.run()

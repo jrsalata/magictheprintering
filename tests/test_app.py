@@ -63,3 +63,25 @@ def test_submit_momir_invalid(client, monkeypatch):
     response = client.post("/momir", data={"mana_value": "not-a-number"})
     assert response.status_code == 400
     assert b"Invalid mana value" in response.data
+
+def test_discord_form_on_page(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert b'action="/discord"' in response.data
+    assert b'name="illegal_cards"' in response.data
+
+
+def test_submit_discord_valid_include_illegal(client, monkeypatch):
+    sent = []
+    monkeypatch.setattr("app.send_print_discord", lambda payload: sent.append(payload))
+    response = client.post("/discord", data={"illegal_cards": "enabled"})
+    assert response.status_code == 200
+    assert b"Printing random non-land including illegal cards for discord" in response.data
+
+
+def test_submit_discord_valid_exclude_illegal(client, monkeypatch):
+    sent = []
+    monkeypatch.setattr("app.send_print_discord", lambda payload: sent.append(payload))
+    response = client.post("/discord")
+    assert response.status_code == 200
+    assert b"Printing random non-land excluding illegal cards for discord" in response.data
