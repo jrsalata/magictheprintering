@@ -5,10 +5,8 @@ class TypeLine(Enum):
     BATTLE = "battle"
     CREATURE = "creature"
     ENCHANTMENT = "enchantment"
-    HERO = "hero"
     INSTANT = "instant"
     KINDRED = "kindred"
     LAND = "land"
     PLANESWALKER = "planeswalker"
     SORCERY = "sorcery"
-    
