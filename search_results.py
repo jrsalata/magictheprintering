@@ -14,7 +14,7 @@ def fetch_json(url: str, timeout: int = 10) -> Union[dict[str, Any], list[Any]]:
 		method="GET",
 		headers={
 			"Accept": "application/json",
-			# "User-Agent": "magictheprintering/1.0",
+			"User-Agent": "magictheprintering/1.0",
 		},
 	)
 
