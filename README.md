@@ -1,6 +1,6 @@
 # magictheprintering
 
-A hello world Flask web application.
+A Flask web application for printing Magic cards.
 
 ## Setup
 
@@ -18,7 +18,13 @@ pip install -r requirements.txt
 flask run
 ```
 
-The app will be available at http://localhost:5000 and returns `Hello, World!`.
+The app will be available at http://localhost:5000.
+
+The UI supports:
+
+- printing hello world and fortunes
+- searching for and printing a single card by name
+- uploading a UTF-8 plain text deck list file where each non-empty line is a card name
 
 ## Test
 
