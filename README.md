@@ -42,3 +42,31 @@ payload = build_hello_world_blocks(
 	"https://cards.scryfall.io/art_crop/front/d/e/de7a150b-1b0d-4928-a2cc-80a4b7412350.jpg?1783904837"
 )
 ```
+
+## HTTP Error Receipts
+
+When an HTTP error is raised inside app routes, the app now attempts to print
+an error receipt using JSON templates.
+
+Templates live under:
+
+- `error_templates/http/404.json`
+- `error_templates/http/4xx.json`
+- `error_templates/http/5xx.json`
+- `error_templates/http/default.json`
+- `error_templates/default.json`
+
+Template placeholders include:
+
+- `{{source}}`
+- `{{status}}`
+- `{{details}}`
+- `{{url}}`
+- `{{timestamp}}`
+
+Template resolution order is:
+
+1. exact status code (example: `404.json`)
+2. status family (example: `4xx.json`)
+3. `http/default.json`
+4. `default.json`

@@ -1,0 +1,22 @@
+{
+  "blocks": [
+    {
+      "type": "title",
+      "style": {
+        "align": "center"
+      },
+      "text": "(>_<)"
+    },
+    {
+      "type": "title",
+      "style": {
+        "font": "b"
+      },
+      "text": "HTTP 429: Too Many Requests"
+    },
+    {
+      "type": "text",
+      "text": "Woah there buckaroo...\nSlow down there\nWait a bit before using this again"
+    }
+  ]
+}

@@ -3,6 +3,7 @@ from typing import Any, Union
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from http_errors import HttpRequestError
 import search_builder
 
 
@@ -13,7 +14,7 @@ def fetch_json(url: str, timeout: int = 10) -> Union[dict[str, Any], list[Any]]:
 		method="GET",
 		headers={
 			"Accept": "application/json",
-			"User-Agent": "magictheprintering/1.0",
+			# "User-Agent": "magictheprintering/1.0",
 		},
 	)
 
@@ -25,7 +26,12 @@ def fetch_json(url: str, timeout: int = 10) -> Union[dict[str, Any], list[Any]]:
 		raise RuntimeError("GET response was not valid JSON") from err
 	except HTTPError as err:
 		details = err.read().decode("utf-8", errors="replace")
-		raise RuntimeError(f"GET request failed with HTTP {err.code}: {details}") from err
+		raise HttpRequestError(
+			source="search_results",
+			status_code=err.code,
+			details=details,
+			url=url,
+		) from err
 	except URLError as err:
 		raise RuntimeError(f"Failed to connect to URL: {err.reason}") from err
 

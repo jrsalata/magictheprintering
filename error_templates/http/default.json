@@ -1,0 +1,30 @@
+{
+  "blocks": [
+    {
+      "type": "text",
+      "text": "HTTP Error Receipt"
+    },
+    {
+      "type": "divider",
+      "style": {
+        "double_width": true
+      }
+    },
+    {
+      "type": "text",
+      "text": "{{source}} returned HTTP {{status}}"
+    },
+    {
+      "type": "text",
+      "text": "{{details}}"
+    },
+    {
+      "type": "text",
+      "text": "Endpoint: {{url}}"
+    },
+    {
+      "type": "text",
+      "text": "{{timestamp}}"
+    }
+  ]
+}
