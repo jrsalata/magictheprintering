@@ -1,8 +1,11 @@
 from flask import Flask, request
 from markupsafe import escape
 
-from printer import build_hello_world_blocks, send_print_job, build_message, send_print_momir, send_print_discord
+from printer import build_hello_world_blocks, send_print_job, build_message
 from fortune import fortune
+from search_builder import SearchBuilder
+from search_results import fetch_json
+from card import Card
 
 app = Flask(__name__)
 
@@ -46,6 +49,7 @@ def print_page():
                 message = "Print job sent!"
         except (RuntimeError, ValueError) as err:
             message = f"Print failed: {err}"
+    
     return PAGE.format(message=escape(message))
 
 
@@ -57,8 +61,16 @@ def submit_momir():
     except ValueError:
         message = f"Invalid mana value: {raw!r}" if raw else "No mana value provided."
         return PAGE.format(message=escape(message)), 400
-    send_print_momir(build_message(f"TODO: print random creature with mana value {mana_value} for momir"))
-    message = f"Printing random creature with mana value {mana_value}"
+
+    builder = SearchBuilder()
+    builder.add_card_type("creature")
+    builder.add_mana_value(mana_value)
+    url = builder.build_url_single_card()
+    json = fetch_json(url)
+    card = Card.from_json(json)
+    response = card.print()
+    message = f"Printed {card.name}"
+
     return PAGE.format(message=escape(message))
 
 @app.route("/discord", methods=["POST"])
@@ -70,6 +82,7 @@ def submit_discord():
     else:
         send_print_discord(build_message(f"TODO: print random non-land excluding illegal cards for discord"))
         message = "Printing random non-land excluding illegal cards for discord"
+    
     return PAGE.format(message=escape(message))
 
 if __name__ == "__main__":
