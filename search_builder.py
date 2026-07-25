@@ -3,7 +3,9 @@ from dotenv import load_dotenv
 from urllib.parse import quote
 import enums.color as Color
 import enums.comparison as Comparison
+import enums.rarity as Rarity
 import enums.typeline as TypeLine
+import enums.format as Format
 class SearchBuilder:
     STATIC_TEXT = "unique:cards -has:flavor_name game:paper -is:extra"
     raw_query = STATIC_TEXT
@@ -17,6 +19,9 @@ class SearchBuilder:
     def add_card_type(self, card_type: str) -> None:
         self.raw_query += f" t:{card_type}"
 
+    def add_mana_cost(self, value: str, comparison: Comparison.Comparison = Comparison.Comparison.EQUAL) -> None:
+        self.raw_query += f" m{comparison.value}{value}"
+
     def add_mana_value(self, value: int, comparison: Comparison.Comparison = Comparison.Comparison.EQUAL) -> None:
         self.raw_query += f" mv{comparison.value}{value}"
 
@@ -29,8 +34,38 @@ class SearchBuilder:
     def add_commander_legality(self) -> None:
         self.raw_query += " f:commander"
 
+    def add_rarity(self, rarity: Rarity.Rarity, comparison: Comparison.Comparison = Comparison.Comparison.EQUAL) -> None:
+        self.raw_query += f" r{comparison.value}{rarity.value}"
+
+    def add_format(self, format: Format.Format) -> None:
+        self.raw_query += f" f:{format.value}"
+
+    def add_banned(self, format: Format.Format) -> None:
+        self.raw_query += f" banned:{format.value}"
+
+    def add_restricted(self, format: Format.Format) -> None:
+        self.raw_query += f" restricted:{format.value}"
+
     def add_exclude_lands(self) -> None:
         self.raw_query += " -type:land"
+
+    def add_set_name(self, set_name: str) -> None:
+        self.raw_query += f" set:{set_name}"
+
+    def add_block_name(self, block_name: str) -> None:
+        self.raw_query += f" block:{block_name}"
+
+    def add_is_clause(self, clause: str) -> None:
+        self.raw_query += f" is:{clause}"
+
+    def add_not_is_clause(self, clause: str) -> None:
+        self.raw_query += f" -is:{clause}"
+
+    def add_in_clause(self, clause: str) -> None:
+        self.raw_query += f" in:{clause}"
+
+    def add_not_in_clause(self, clause: str) -> None:
+        self.raw_query += f" -in:{clause}"
 
     def build_search_query(self) -> str:
         return self.raw_query

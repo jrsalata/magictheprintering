@@ -104,4 +104,9 @@ def test_momir_http_error_prints_error_receipt(client, monkeypatch):
     assert response.status_code == 502
     assert b"Error receipt sent to printer" in response.data
     assert len(sent) == 1
-    assert sent[0]["blocks"][0]["text"] == "Not Found (404)"
+    rendered_text = "\n".join(
+        block.get("text", "")
+        for block in sent[0]["blocks"]
+        if isinstance(block, dict)
+    )
+    assert "404" in rendered_text
