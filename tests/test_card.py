@@ -138,7 +138,7 @@ def test_build_blocks_mana_cost_fits_on_same_line():
 
 
 def test_build_blocks_mana_cost_pushed_to_next_line_for_long_name():
-    # Long card name: mana cost must be at the end of a 48-char-wide line boundary
+    # Long card name: mana cost must appear on a new line, right-aligned to LINE_WIDTH
     long_name = (
         "Our Market Research Shows That Players Like Really Long Card Names "
         "So We Made this Card to Have the Absolute Longest Card Name Ever Elemental"
@@ -147,7 +147,7 @@ def test_build_blocks_mana_cost_pushed_to_next_line_for_long_name():
     face = Face(name=long_name, mana_cost=mana_cost)
     blocks = face._build_blocks()
     name_line = blocks[0]["text"]
-    assert name_line.endswith(mana_cost)
-    assert len(name_line) % LINE_WIDTH == 0
-    idx = name_line.index(mana_cost)
-    assert name_line[idx - 1] == " "
+    parts = name_line.split("\n")
+    assert len(parts) == 2
+    assert parts[0] == long_name
+    assert parts[1] == mana_cost.rjust(LINE_WIDTH)

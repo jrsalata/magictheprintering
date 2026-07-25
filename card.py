@@ -115,12 +115,12 @@ class Face:
             position = len(self.name) % LINE_WIDTH
             remaining = LINE_WIDTH - position
             # If the mana cost (plus at least one space) fits on the current line,
-            # right-align it there; otherwise push it to the end of the next line.
+            # right-align it there; otherwise put it on a new line.
             if remaining >= mana_len + 1:
                 padding = remaining - mana_len
+                name_line = self.name + " " * padding + self.mana_cost
             else:
-                padding = remaining + LINE_WIDTH - mana_len
-            name_line = self.name + " " * padding + self.mana_cost
+                name_line = self.name + "\n" + self.mana_cost.rjust(LINE_WIDTH)
         else:
             name_line = self.name
         blocks.append({"type": "text", "text": name_line, "style": typeline_style})
