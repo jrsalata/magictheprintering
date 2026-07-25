@@ -15,7 +15,7 @@ PAGE = """<!doctype html>
 </form>
 <form method="post" action="/momir">
   <label for="mana_value">Mana Value for Momir:</label>
-  <input id="mana_value" name="mana_value" type="mana_value" step="any" required>
+  <input id="mana_value" name="mana_value" type="number" step="any" required>
   <button type="submit">I'm Feeling Lucky</button>
 </form>
 <p>{message}</p>
