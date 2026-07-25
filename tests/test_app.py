@@ -49,6 +49,82 @@ def test_discord_form_on_page(client):
     assert b'name="illegal_cards"' in response.data
 
 
+def test_search_form_on_page(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert b'action="/search"' in response.data
+    assert b'name="card_name"' in response.data
+
+
+def test_search_prints_fuzzy_matched_card(client, monkeypatch):
+    sent = []
+    fetched = []
+
+    def fake_fetch_card(card_name):
+        fetched.append(card_name)
+        return {"name": "Lightning Bolt", "type_line": "Instant"}
+
+    monkeypatch.setattr("app.fetch_card", fake_fetch_card)
+    monkeypatch.setattr("card.send_print_job", lambda payload: sent.append(payload) or {"success": True})
+
+    response = client.post("/search", data={"card_name": "lightn bolt"})
+
+    assert response.status_code == 200
+    assert b"Printed Lightning Bolt" in response.data
+    assert fetched == ["lightn bolt"]
+    assert len(sent) == 1
+    assert sent[0]["blocks"][0]["text"] == "Lightning Bolt"
+
+
+def test_search_missing_name_returns_400(client):
+    response = client.post("/search", data={"card_name": "   "})
+    assert response.status_code == 400
+    assert b"No card name provided." in response.data
+
+
+def test_search_no_match_shows_scryfall_details(client, monkeypatch):
+    sent = []
+
+    def fake_fetch_card(_card_name):
+        raise HttpRequestError(
+            source="scryfall",
+            status_code=404,
+            details="No cards found matching “not a real card”",
+            url="https://api.scryfall.com/cards/named?fuzzy=not%20a%20real%20card",
+        )
+
+    monkeypatch.setattr("app.fetch_card", fake_fetch_card)
+    monkeypatch.setattr("app.send_print_job", lambda payload: sent.append(payload) or {"success": True})
+
+    response = client.post("/search", data={"card_name": "not a real card"})
+
+    assert response.status_code == 404
+    assert "No cards found matching “not a real card”".encode("utf-8") in response.data
+    assert sent == []
+
+
+def test_search_http_error_prints_error_receipt(client, monkeypatch):
+    sent = []
+
+    def fake_fetch_card(_card_name):
+        raise HttpRequestError(
+            source="scryfall",
+            status_code=503,
+            details="Service unavailable",
+            url="https://api.scryfall.com/cards/named?fuzzy=bolt",
+        )
+
+    monkeypatch.setattr("app.fetch_card", fake_fetch_card)
+    monkeypatch.setattr("app.send_print_job", lambda payload: sent.append(payload) or {"success": True})
+
+    response = client.post("/search", data={"card_name": "bolt"})
+
+    assert response.status_code == 502
+    assert b"Error receipt sent to printer" in response.data
+    assert len(sent) == 1
+    assert sent[0]["blocks"][0]["text"] == "HTTP Server Error"
+
+
 def test_root_http_error_prints_error_receipt(client, monkeypatch):
     calls = []
 
