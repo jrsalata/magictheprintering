@@ -1,6 +1,4 @@
-import json
-import os
-
+from download_card import fetch_card, save_card_json
 from printer import _image_url_to_data_url, send_print_job
 
 
@@ -127,9 +125,9 @@ class Card:
 
 
 if __name__ == "__main__":
-    sample_path = os.path.join(os.path.dirname(__file__), "sample_data", "lightning bolt.json")
-    with open(sample_path, "r", encoding="utf-8") as file:
-        sample_response = json.load(file)
+    sample_name = "Grist, the Hunger Tide"
+    sample_response = fetch_card(sample_name)
+    save_card_json(sample_response, sample_name)
 
     card = Card.from_json(sample_response)
     response = card.print()
