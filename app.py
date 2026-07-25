@@ -8,6 +8,7 @@ from fortune import fortune
 from search_builder import SearchBuilder
 from search_results import fetch_json
 from card import Card
+from download_card import fetch_card
 
 app = Flask(__name__)
 
@@ -29,6 +30,11 @@ PAGE = """<!doctype html>
     Include illegal cards
   </label>
   <input type="submit" value="My little discord">
+</form>
+<form method="post" action="/search">
+  <label for="card_name">Card Name:</label>
+  <input id="card_name" name="card_name" type="text" required>
+  <button type="submit">Search &amp; Print</button>
 </form>
 <p>{message}</p>
 """
@@ -78,6 +84,30 @@ def submit_momir():
         message = f"Printed {card.name}"
         return PAGE.format(message=escape(message))
     except HttpRequestError as err:
+        _print_http_error_receipt(err)
+        message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
+        return PAGE.format(message=escape(message)), 502
+    except (RuntimeError, ValueError) as err:
+        message = f"Print failed: {err}"
+        return PAGE.format(message=escape(message)), 500
+
+
+@app.route("/search", methods=["POST"])
+def submit_search():
+    card_name = request.form.get("card_name", "").strip()
+    if not card_name:
+        return PAGE.format(message=escape("No card name provided.")), 400
+
+    try:
+        card_json = fetch_card(card_name)
+        card = Card.from_json(card_json)
+        card.print()
+        message = f"Printed {card.name}"
+        return PAGE.format(message=escape(message))
+    except HttpRequestError as err:
+        if err.status_code == 404:
+            message = err.details or f"No card found matching {card_name!r}."
+            return PAGE.format(message=escape(message)), 404
         _print_http_error_receipt(err)
         message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
         return PAGE.format(message=escape(message)), 502
