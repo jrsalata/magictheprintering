@@ -23,7 +23,7 @@ def _image_file_to_data_url(image_path: str) -> str:
 		return _image_to_data_url(image)
 
 
-def _image_url_to_data_url(image_url: str, timeout: int = 30) -> str:
+def _image_url_to_data_url(image_url: str, rotate: bool = False, timeout: int = 30) -> str:
 	"""Download an image from URL and convert it to a data URL payload string."""
 	request = Request(
 		image_url,
@@ -33,6 +33,8 @@ def _image_url_to_data_url(image_url: str, timeout: int = 30) -> str:
 		image_bytes = response.read()
 
 	with Image.open(BytesIO(image_bytes)) as image:
+		if rotate:
+			image = image.rotate(90, expand=True)
 		return _image_to_data_url(image)
 
 

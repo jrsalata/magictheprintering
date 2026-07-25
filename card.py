@@ -13,6 +13,7 @@ class Face:
         flavor_text: str = None,
         counter: str = None,
         attraction_lights: str = None,
+        rotate_image: bool = False,
     ):
         self.name = name
         self.mana_cost = mana_cost
@@ -22,6 +23,7 @@ class Face:
         self.flavor_text = flavor_text
         self.counter = counter
         self.attraction_lights = attraction_lights
+        self.rotate_image = rotate_image
         
     @classmethod
     def from_json(cls, face_json: dict, fallback: dict = None):
@@ -55,6 +57,12 @@ class Face:
             attraction_lights = "Attraction Lights: " + ", ".join(str(light) for light in lights)
         else:
             attraction_lights = None
+            
+        layout = value("layout")
+        if layout is not None:
+            rotate_image = layout in ("case", "saga", "class")
+        else:
+            rotate_image = False
 
         return cls(
             name=name,
@@ -65,6 +73,7 @@ class Face:
             flavor_text=value("flavor_text"),
             counter=counter,
             attraction_lights=attraction_lights,
+            rotate_image=rotate_image,
         )
 
     def _build_blocks(self) -> list[dict]:
@@ -83,7 +92,7 @@ class Face:
         name_line = f"{self.name:<{LINE_WIDTH - len(self.mana_cost)}}{self.mana_cost}" if self.mana_cost else self.name
         blocks.append({"type": "text", "text": name_line, "style": typeline_style})
         if self.cropped_image:
-            blocks.append({"type": "image", "image": _image_url_to_data_url(self.cropped_image), "center": True})
+            blocks.append({"type": "image", "image": _image_url_to_data_url(self.cropped_image, self.rotate_image), "center": True})
         if self.typeline:
             divider()
             blocks.append({"type": "text", "text": self.typeline, "style": typeline_style})
@@ -98,7 +107,6 @@ class Face:
             blocks.append({"type": "text", "text": self.flavor_text, "style": flavor_text_style})
         if self.counter:
             blocks.append({"type": "text", "text": self.counter, "style": counter_style})
-
         return blocks
 
     def print(self):
@@ -137,7 +145,7 @@ class Card:
 
 
 if __name__ == "__main__":
-    sample_name = "clown extruder"
+    sample_name = "sokka, bold boomeranger"
     sample_response = fetch_card(sample_name)
     save_card_json(sample_response, sample_name)
 
