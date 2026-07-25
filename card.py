@@ -1,3 +1,6 @@
+import json
+import os
+
 from printer import _image_url_to_data_url, send_print_job
 
 
@@ -19,6 +22,35 @@ class Card:
         self.oracle_text = oracle_text
         self.flavor_text = flavor_text
         self.counter = counter
+
+    @classmethod
+    def from_json(cls, card_json: dict):
+        name = card_json.get("name")
+        if not name:
+            raise ValueError("Card JSON must include a non-empty 'name'")
+
+        image_uris = card_json.get("image_uris")
+        if isinstance(image_uris, dict):
+            cropped_image = image_uris.get("art_crop")
+        else:
+            cropped_image = None
+
+        power = card_json.get("power")
+        toughness = card_json.get("toughness")
+        if power is not None and toughness is not None:
+            counter = f"{power}/{toughness}"
+        else:
+            counter = None
+
+        return cls(
+            name=name,
+            mana_cost=card_json.get("mana_cost"),
+            cropped_image=cropped_image,
+            typeline=card_json.get("type_line"),
+            oracle_text=card_json.get("oracle_text"),
+            flavor_text=card_json.get("flavor_text"),
+            counter=counter,
+        )
 
     def print(self):
         def divider():
@@ -53,14 +85,10 @@ class Card:
 
 
 if __name__ == "__main__":
-    card = Card(
-        name="Aang, Air Nomad",
-        mana_cost="{3}{W}{W}",
-        cropped_image="https://cards.scryfall.io/art_crop/front/f/3/f369827d-e4cd-4bc7-8c5e-72882eff0908.jpg?1783904788",
-        typeline="Legendary Creature — Human Avatar Ally",
-        oracle_text="Flying (This creature can't be blocked except by creatures with flying or reach.)\nVigilance (Attacking doesn't cause this creature to tap.)\nOther creatures you control have vigilance.",
-        flavor_text="Monk Gyatso taught Aang many things, most importantly to live with joy.",
-        counter="5/4",
-    )
+    sample_path = os.path.join(os.path.dirname(__file__), "sample_data", "aang.json")
+    with open(sample_path, "r", encoding="utf-8") as file:
+        sample_response = json.load(file)
+
+    card = Card.from_json(sample_response)
     response = card.print()
     print("Print job response:", response)
