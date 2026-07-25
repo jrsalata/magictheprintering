@@ -4,7 +4,7 @@ import os
 from printer import _image_url_to_data_url, send_print_job
 
 
-class Card:
+class Face:
     def __init__(
         self,
         name: str,
@@ -24,19 +24,27 @@ class Card:
         self.counter = counter
 
     @classmethod
-    def from_json(cls, card_json: dict):
-        name = card_json.get("name")
-        if not name:
-            raise ValueError("Card JSON must include a non-empty 'name'")
+    def from_json(cls, face_json: dict, fallback: dict = None):
+        if not isinstance(face_json, dict):
+            raise ValueError("Face JSON must be an object")
 
-        image_uris = card_json.get("image_uris")
+        fallback = fallback if isinstance(fallback, dict) else {}
+
+        def value(field_name):
+            return face_json.get(field_name, fallback.get(field_name))
+
+        name = value("name")
+        if not name:
+            raise ValueError("Face JSON must include a non-empty 'name'")
+
+        image_uris = value("image_uris")
         if isinstance(image_uris, dict):
             cropped_image = image_uris.get("art_crop")
         else:
             cropped_image = None
 
-        power = card_json.get("power")
-        toughness = card_json.get("toughness")
+        power = value("power")
+        toughness = value("toughness")
         if power is not None and toughness is not None:
             counter = f"{power}/{toughness}"
         else:
@@ -44,15 +52,15 @@ class Card:
 
         return cls(
             name=name,
-            mana_cost=card_json.get("mana_cost"),
+            mana_cost=value("mana_cost"),
             cropped_image=cropped_image,
-            typeline=card_json.get("type_line"),
-            oracle_text=card_json.get("oracle_text"),
-            flavor_text=card_json.get("flavor_text"),
+            typeline=value("type_line"),
+            oracle_text=value("oracle_text"),
+            flavor_text=value("flavor_text"),
             counter=counter,
         )
 
-    def print(self):
+    def _build_blocks(self) -> list[dict]:
         def divider():
             blocks.append({"type": "divider", "style": {"double_width": True}})
 
@@ -81,11 +89,45 @@ class Card:
         if self.counter:
             blocks.append({"type": "text", "text": self.counter, "style": counter_style})
 
+        return blocks
+
+    def print(self):
+        return send_print_job({"blocks": self._build_blocks()})
+
+
+class Card:
+    def __init__(self, faces: list[Face], name: str = None):
+        if not faces:
+            raise ValueError("Card must contain at least one face")
+
+        self.faces = faces
+        self.name = name or faces[0].name
+
+    @classmethod
+    def from_json(cls, card_json: dict):
+        if not isinstance(card_json, dict):
+            raise ValueError("Card JSON must be an object")
+
+        face_payloads = card_json.get("card_faces")
+        if isinstance(face_payloads, list) and face_payloads:
+            faces = [Face.from_json(face_payload, fallback=card_json) for face_payload in face_payloads]
+        else:
+            faces = [Face.from_json(card_json)]
+
+        return cls(faces=faces, name=card_json.get("name"))
+
+    def print(self):
+        blocks = []
+        for index, face in enumerate(self.faces):
+            if index > 0:
+                blocks.append({"type": "divider", "style": {"double_width": True}})
+            blocks.extend(face._build_blocks())
+
         return send_print_job({"blocks": blocks})
 
 
 if __name__ == "__main__":
-    sample_path = os.path.join(os.path.dirname(__file__), "sample_data", "aang.json")
+    sample_path = os.path.join(os.path.dirname(__file__), "sample_data", "lightning bolt.json")
     with open(sample_path, "r", encoding="utf-8") as file:
         sample_response = json.load(file)
 
