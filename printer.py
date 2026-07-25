@@ -98,3 +98,8 @@ def send_print_job(payload: dict[str, Any], timeout: int = 100) -> dict[str, Any
 
 
 
+if __name__ == "__main__":
+	# Example usage
+	payload = build_hello_world_blocks()
+	response = send_print_job(payload)
+	print("Print job response:", response)
