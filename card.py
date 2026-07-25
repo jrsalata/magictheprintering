@@ -52,7 +52,7 @@ class Face:
             
         lights = value("attraction_lights")
         if lights is not None:
-            attraction_lights = "attraction lights: " + str(lights)
+            attraction_lights = "Attraction Lights: " + ", ".join(str(light) for light in lights)
         else:
             attraction_lights = None
 
