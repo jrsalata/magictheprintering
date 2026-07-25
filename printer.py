@@ -99,6 +99,13 @@ def build_hello_world_blocks(image_url: str | None = None) -> dict[str, Any]:
 		]
 	}
 
+def build_message(message: str) -> dict[str, Any]:
+	"""Return a block payload that prints the given message."""
+	return {
+		"blocks": [
+			{"type": "text", "text": message},
+		]
+	}
 
 def send_print_job(payload: dict[str, Any], timeout: int = 100) -> dict[str, Any]:
 	"""POST a print payload to the printer's /builder endpoint."""
