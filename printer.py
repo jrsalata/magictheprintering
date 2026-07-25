@@ -58,6 +58,10 @@ def send_print_momir(payload: dict[str, Any], timeout: int = 100) -> dict[str, A
 	# TODO replace with actual logic
 	send_print_job(payload, timeout)
 
+def send_print_discord(payload: dict[str, Any], timeout: int = 100) -> dict[str, Any]:
+	# TODO replace with actual logic
+	send_print_job(payload, timeout)
+
 def send_print_job(payload: dict[str, Any], timeout: int = 100) -> dict[str, Any]:
 	"""POST a print payload to the printer's /builder endpoint."""
 	base_url, username, password = _printer_config()
