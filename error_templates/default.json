@@ -1,0 +1,30 @@
+{
+  "blocks": [
+    {
+      "type": "text",
+      "text": "Printing Error Receipt"
+    },
+    {
+      "type": "divider",
+      "style": {
+        "double_width": true
+      }
+    },
+    {
+      "type": "text",
+      "text": "Source: {{source}}"
+    },
+    {
+      "type": "text",
+      "text": "Status: {{status}}"
+    },
+    {
+      "type": "text",
+      "text": "Details: {{details}}"
+    },
+    {
+      "type": "text",
+      "text": "Time: {{timestamp}}"
+    }
+  ]
+}

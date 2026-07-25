@@ -1,0 +1,26 @@
+{
+  "blocks": [
+    {
+      "type": "text",
+      "text": "HTTP Client Error"
+    },
+    {
+      "type": "divider",
+      "style": {
+        "double_width": true
+      }
+    },
+    {
+      "type": "text",
+      "text": "Request failed with HTTP {{status}}"
+    },
+    {
+      "type": "text",
+      "text": "{{details}}"
+    },
+    {
+      "type": "text",
+      "text": "{{url}}"
+    }
+  ]
+}
