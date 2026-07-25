@@ -1,5 +1,27 @@
+import unicodedata
+
 from download_card import fetch_card, save_card_json
 from printer import _image_url_to_data_url, send_print_job
+
+
+def _canonicalize_string(s: str) -> str:
+    """Convert Unicode characters to canonical ASCII forms.
+    
+    Examples: — (em dash) → -, " → ", " → "
+    """
+    if not isinstance(s, str):
+        return s
+    
+    # Mapping of Unicode characters to ASCII replacements
+    char_map = {
+        '−': '-',  # en dash
+    }
+    
+    result = s
+    for unicode_char, ascii_replacement in char_map.items():
+        result = result.replace(unicode_char, ascii_replacement)
+    
+    return result
 
 
 class Face:
@@ -34,6 +56,7 @@ class Face:
         name = value("name")
         if not name:
             raise ValueError("Face JSON must include a non-empty 'name'")
+        name = _canonicalize_string(name)
 
         image_uris = value("image_uris")
         if isinstance(image_uris, dict):
@@ -56,12 +79,12 @@ class Face:
 
         return cls(
             name=name,
-            mana_cost=value("mana_cost"),
+            mana_cost=_canonicalize_string(value("mana_cost")),
             cropped_image=cropped_image,
-            typeline=value("type_line"),
-            oracle_text=value("oracle_text"),
-            flavor_text=value("flavor_text"),
-            counter=counter,
+            typeline=_canonicalize_string(value("type_line")),
+            oracle_text=_canonicalize_string(value("oracle_text")),
+            flavor_text=_canonicalize_string(value("flavor_text")),
+            counter=_canonicalize_string(counter),
         )
 
     def _build_blocks(self) -> list[dict]:
@@ -131,7 +154,7 @@ class Card:
 
 
 if __name__ == "__main__":
-    sample_name = "Invasion of Zendikar"
+    sample_name = "Grist, the Hunger Tide"
     sample_response = fetch_card(sample_name)
     save_card_json(sample_response, sample_name)
 
