@@ -29,6 +29,9 @@ class SearchBuilder:
     def add_commander_legality(self) -> None:
         self.raw_query += " f:commander"
 
+    def add_exclude_lands(self) -> None:
+        self.raw_query += " -type:land"
+
     def build_search_query(self) -> str:
         return self.raw_query
 
