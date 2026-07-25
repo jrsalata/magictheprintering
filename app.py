@@ -76,13 +76,19 @@ def submit_momir():
 @app.route("/discord", methods=["POST"])
 def submit_discord():
     include_illegal = 'enabled' in request.form.getlist('illegal_cards')
-    if include_illegal:
-        send_print_discord(build_message(f"TODO: print random non-land including illegal cards for discord"))
-        message = "Printing random non-land including illegal cards for discord"
-    else:
-        send_print_discord(build_message(f"TODO: print random non-land excluding illegal cards for discord"))
-        message = "Printing random non-land excluding illegal cards for discord"
-    
+
+    builder = SearchBuilder()
+
+    if not include_illegal:
+        builder.add_commander_legality()
+        
+    builder.add_exclude_lands()
+    url = builder.build_url_single_card()
+    json = fetch_json(url)
+    card = Card.from_json(json)
+    response = card.print()
+    message = f"Printed {card.name}"
+
     return PAGE.format(message=escape(message))
 
 if __name__ == "__main__":
