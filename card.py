@@ -43,8 +43,14 @@ class Face:
 
         power = value("power")
         toughness = value("toughness")
+        loyalty = value("loyalty")
+        defense = value("defense")
         if power is not None and toughness is not None:
             counter = f"{power}/{toughness}"
+        elif loyalty is not None:
+            counter = loyalty
+        elif defense is not None:
+            counter = defense
         else:
             counter = None
 
@@ -125,7 +131,7 @@ class Card:
 
 
 if __name__ == "__main__":
-    sample_name = "Grist, the Hunger Tide"
+    sample_name = "Invasion of Zendikar"
     sample_response = fetch_card(sample_name)
     save_card_json(sample_response, sample_name)
 
