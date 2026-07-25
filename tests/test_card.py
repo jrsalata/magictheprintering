@@ -1,4 +1,4 @@
-from card import Card, Face
+from card import Card, Face, LINE_WIDTH
 
 
 def test_from_json_maps_expected_fields():
@@ -124,3 +124,30 @@ def test_card_print_prints_all_faces_with_divider_between(monkeypatch):
     assert [block["type"] for block in blocks] == ["text", "divider", "text"]
     assert blocks[0]["text"] == "Front Face"
     assert blocks[2]["text"] == "Back Face"
+
+
+def test_build_blocks_mana_cost_fits_on_same_line():
+    # Short name: mana cost should be right-aligned on the same (first) line
+    face = Face(name="Lightning Bolt", mana_cost="{R}")
+    blocks = face._build_blocks()
+    name_line = blocks[0]["text"]
+    assert len(name_line) == LINE_WIDTH
+    assert name_line.endswith("{R}")
+    assert name_line.startswith("Lightning Bolt")
+    assert " " in name_line[len("Lightning Bolt"):name_line.index("{R}")]
+
+
+def test_build_blocks_mana_cost_pushed_to_next_line_for_long_name():
+    # Long card name: mana cost must appear on a new line, right-aligned to LINE_WIDTH
+    long_name = (
+        "Our Market Research Shows That Players Like Really Long Card Names "
+        "So We Made this Card to Have the Absolute Longest Card Name Ever Elemental"
+    )
+    mana_cost = "{1}{G}"
+    face = Face(name=long_name, mana_cost=mana_cost)
+    blocks = face._build_blocks()
+    name_line = blocks[0]["text"]
+    parts = name_line.split("\n")
+    assert len(parts) == 2
+    assert parts[0] == long_name
+    assert parts[1] == mana_cost.rjust(LINE_WIDTH)
