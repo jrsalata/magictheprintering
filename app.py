@@ -1,7 +1,7 @@
 from flask import Flask, request
 from markupsafe import escape
 
-from printer import build_hello_world_blocks, send_print_job, build_message
+from printer import build_hello_world_blocks, send_print_job, build_message, send_print_momir
 from fortune import fortune
 
 app = Flask(__name__)
@@ -12,6 +12,11 @@ PAGE = """<!doctype html>
 <form method="post" action="/">
   <button value="hello" name="action" type="submit">Print Hello World</button>
   <button value="fortune" name="action" type="submit">Print Fortune</button>
+</form>
+<form method="post" action="/momir">
+  <label for="mana_value">Mana Value for Momir:</label>
+  <input id="mana_value" name="mana_value" type="number" step="any" required>
+  <button type="submit">I'm Feeling Lucky</button>
 </form>
 <p>{message}</p>
 """
@@ -34,6 +39,19 @@ def print_page():
                 message = "Print job sent!"
         except (RuntimeError, ValueError) as err:
             message = f"Print failed: {err}"
+    return PAGE.format(message=escape(message))
+
+
+@app.route("/momir", methods=["POST"])
+def submit_momir():
+    raw = request.form.get("mana_value", "").strip()
+    try:
+        mana_value = int(raw)
+    except ValueError:
+        message = f"Invalid mana value: {raw!r}" if raw else "No mana value provided."
+        return PAGE.format(message=escape(message)), 400
+    send_print_momir(build_message(f"TODO: print random creature with mana value {mana_value} for momir"))
+    message = f"Printing random creature with mana value {mana_value}"
     return PAGE.format(message=escape(message))
 
 
