@@ -78,7 +78,10 @@ def submit_discord():
     include_illegal = 'enabled' in request.form.getlist('illegal_cards')
 
     builder = SearchBuilder()
-    builder.add_commander_legality()
+
+    if not include_illegal:
+        builder.add_commander_legality()
+        
     builder.add_exclude_lands()
     url = builder.build_url_single_card()
     json = fetch_json(url)
