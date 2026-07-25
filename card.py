@@ -36,7 +36,7 @@ class Card:
         if self.flavor_text:
             blocks.append({"type": "text", "text": self.flavor_text})
         if self.counter:
-            blocks.append({"type": "text", "text": self.counter})
+            blocks.append({"type": "counter", "text": self.counter})
 
         return send_print_job({"blocks": blocks})
 
@@ -49,6 +49,7 @@ if __name__ == "__main__":
         typeline="Legendary Creature — Human Avatar Ally",
         oracle_text="Flying (This creature can't be blocked except by creatures with flying or reach.)\nVigilance (Attacking doesn't cause this creature to tap.)\nOther creatures you control have vigilance.",
         flavor_text="Monk Gyatso taught Aang many things, most importantly to live with joy.",
+        counter="5/4",
     )
     response = card.print()
     print("Print job response:", response)
