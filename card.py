@@ -34,6 +34,7 @@ class Face:
         oracle_text: str = None,
         flavor_text: str = None,
         counter: str = None,
+        attraction_lights: str = None,
     ):
         self.name = name
         self.mana_cost = mana_cost
@@ -42,7 +43,8 @@ class Face:
         self.oracle_text = oracle_text
         self.flavor_text = flavor_text
         self.counter = counter
-
+        self.attraction_lights = attraction_lights
+        
     @classmethod
     def from_json(cls, face_json: dict, fallback: dict = None):
         if not isinstance(face_json, dict):
@@ -76,6 +78,12 @@ class Face:
             counter = defense
         else:
             counter = None
+            
+        lights = value("attraction_lights")
+        if lights is not None:
+            attraction_lights = "Attraction Lights: " + ", ".join(str(light) for light in lights)
+        else:
+            attraction_lights = None
 
         return cls(
             name=name,
@@ -85,6 +93,7 @@ class Face:
             oracle_text=_canonicalize_string(value("oracle_text")),
             flavor_text=_canonicalize_string(value("flavor_text")),
             counter=_canonicalize_string(counter),
+            attraction_lights=attraction_lights,
         )
 
     def _build_blocks(self) -> list[dict]:
@@ -110,6 +119,9 @@ class Face:
             divider()
         if self.oracle_text:
             blocks.append({"type": "text", "text": self.oracle_text, "style": oracle_text_style})
+        if self.attraction_lights:
+            blocks.append({"type": "text", "text": self.attraction_lights, "style": oracle_text_style})
+
         if self.flavor_text:
             divider()
             blocks.append({"type": "text", "text": self.flavor_text, "style": flavor_text_style})
@@ -154,7 +166,7 @@ class Card:
 
 
 if __name__ == "__main__":
-    sample_name = "Grist, the Hunger Tide"
+    sample_name = "clown extruder"
     sample_response = fetch_card(sample_name)
     save_card_json(sample_response, sample_name)
 
