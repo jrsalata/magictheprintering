@@ -21,22 +21,33 @@ class Card:
         self.counter = counter
 
     def print(self):
+        def divider():
+            blocks.append({"type": "divider", "style": {"double_width": True}})
+
+        typeline_style = {"bold": True, "normal_textsize": True}
+        oracle_text_style = {"align": "left", "normal_textsize": True}
+        flavor_text_style = {"font": "b", "normal_textsize": True}
+        counter_style = {"align": "right", "bold": True, "double_width": True, "double_height": True, "normal_textsize": True}
+
+        LINE_WIDTH = 48  # effective chars per line at normal text size
+
         blocks = []
 
-        if self.name:
-            blocks.append({"type": "text", "text": self.name})
-        if self.mana_cost:
-            blocks.append({"type": "text", "text": self.mana_cost})
+        name_line = f"{self.name:<{LINE_WIDTH - len(self.mana_cost)}}{self.mana_cost}" if self.mana_cost else self.name
+        blocks.append({"type": "text", "text": name_line, "style": typeline_style})
         if self.cropped_image:
-            blocks.append({"type": "image", "image": _image_url_to_data_url(self.cropped_image)})
+            blocks.append({"type": "image", "image": _image_url_to_data_url(self.cropped_image), "center": True})
         if self.typeline:
-            blocks.append({"type": "text", "text": self.typeline})
+            divider()
+            blocks.append({"type": "text", "text": self.typeline, "style": typeline_style})
+            divider()
         if self.oracle_text:
-            blocks.append({"type": "text", "text": self.oracle_text})
+            blocks.append({"type": "text", "text": self.oracle_text, "style": oracle_text_style})
         if self.flavor_text:
-            blocks.append({"type": "text", "text": self.flavor_text})
+            divider()
+            blocks.append({"type": "text", "text": self.flavor_text, "style": flavor_text_style})
         if self.counter:
-            blocks.append({"type": "counter", "text": self.counter})
+            blocks.append({"type": "text", "text": self.counter, "style": counter_style})
 
         return send_print_job({"blocks": blocks})
 
