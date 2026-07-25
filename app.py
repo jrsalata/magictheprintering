@@ -45,17 +45,13 @@ def print_page():
 @app.route("/momir", methods=["POST"])
 def submit_momir():
     raw = request.form.get("mana_value", "").strip()
-    sent = False
     try:
         mana_value = int(raw)
     except ValueError:
         message = f"Invalid mana value: {raw!r}" if raw else "No mana value provided."
         return PAGE.format(message=escape(message)), 400
-    if mana_value.is_integer():
-        send_print_momir(build_message(f"TODO: print random creature with mana value {mana_value} for momir"))
-        sent = True
-    if sent:
-        message = f"Printing random creature with mana value {mana_value}"
+    send_print_momir(build_message(f"TODO: print random creature with mana value {mana_value} for momir"))
+    message = f"Printing random creature with mana value {mana_value}"
     return PAGE.format(message=escape(message))
 
 
