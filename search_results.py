@@ -7,7 +7,7 @@ from http_errors import HttpRequestError
 import search_builder
 
 
-def fetch_json(url: str, timeout: int = 10) -> Union[dict[str, Any], list[Any]]:
+def fetch_json(url: str, timeout: int = 1000) -> Union[dict[str, Any], list[Any]]:
 	"""Send a GET request to the given URL and return the parsed JSON body."""
 	request = Request(
 		url,
