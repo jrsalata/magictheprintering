@@ -83,25 +83,9 @@ def build_hello_world_blocks(image_url: str | None = None) -> dict[str, Any]:
 	If image_url is provided, the image is downloaded and embedded as a data URL.
 	Otherwise, the local sample image file is used.
 	"""
-	sample_image_path = os.path.join(
-		os.path.dirname(__file__),
-		"sample_data",
-		"tle-74-aang-airbending-master.jpg",
-	)
-	image_data_url = (
-		_image_url_to_data_url(image_url)
-		if image_url
-		else _image_file_to_data_url(sample_image_path)
-	)
-
 	return {
 		"blocks": [
-			{"type": "text", "text": "Hello, World!"},
-			{
-				"type": "image",
-				"image": image_data_url,
-				"center": True,
-			},
+			{"type": "text", "text": "Hello, World!"}
 		]
 	}
 

@@ -52,6 +52,29 @@ def test_discord_form_on_page(client):
     assert b'name="illegal_cards"' in response.data
 
 
+def test_discord_search_url_normalizes_cards_search_endpoint(client, monkeypatch):
+    sent = []
+    seen_urls = []
+
+    monkeypatch.setenv("SEARCH_URL", "https://api.scryfall.com/cards/search")
+
+    def fake_fetch_json(url):
+        seen_urls.append(url)
+        return {"name": "Lightning Bolt", "type_line": "Instant"}
+
+    monkeypatch.setattr("app.fetch_json", fake_fetch_json)
+    monkeypatch.setattr("card.send_print_job", lambda payload: sent.append(payload) or {"success": True})
+
+    response = client.post("/discord", data={"illegal_cards": "enabled"})
+
+    assert response.status_code == 200
+    assert b"Printed Lightning Bolt" in response.data
+    assert len(seen_urls) == 1
+    assert seen_urls[0].startswith("https://api.scryfall.com/cards/random?q=")
+    assert "/cards/search/cards/random" not in seen_urls[0]
+    assert len(sent) == 1
+
+
 def test_search_form_on_page(client):
     response = client.get("/")
     assert response.status_code == 200
