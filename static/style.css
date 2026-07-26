@@ -29,6 +29,7 @@
   --accent-green: #5c9b74;
   --accent-red: #d97a5e;
   --accent-gold: var(--gold);
+  --accent-multi: #a06cd5;
 }
 
 :root[data-theme="light"] {
@@ -53,6 +54,7 @@
   --accent-green: #2f5c3f;
   --accent-red: #b8402a;
   --accent-gold: var(--gold-deep);
+  --accent-multi: #6b3fa0;
 }
 
 * {
@@ -142,6 +144,11 @@ main {
 .card--green { border-top-color: var(--accent-green); }
 .card--red { border-top-color: var(--accent-red); }
 .card--gold { border-top-color: var(--accent-gold); }
+.card--multi { border-top-color: var(--accent-multi); }
+
+.card--wide {
+  grid-column: 1 / -1;
+}
 
 .card h2 {
   margin: 0 0 0.25rem;
@@ -218,4 +225,40 @@ button:hover {
 button:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.filter-field--wide {
+  grid-column: 1 / -1;
+}
+
+.filter-inline {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-inline select {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.filter-inline input {
+  flex: 1 1 auto;
+}
+
+.filter-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
 }
