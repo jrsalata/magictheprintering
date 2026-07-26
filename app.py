@@ -1,5 +1,4 @@
-from flask import Flask, jsonify, request
-from markupsafe import escape
+from flask import Flask, jsonify, render_template, request
 
 from error_receipt import build_http_error_receipt
 from http_errors import HttpRequestError
@@ -13,58 +12,9 @@ import pack
 
 app = Flask(__name__)
 
-PAGE = """<!doctype html>
-<title>Magic the Printering</title>
-<h1>Magic the Printering</h1>
-<form method="post" action="/">
-  <button value="hello" name="action" type="submit">Print Hello World</button>
-  <button value="fortune" name="action" type="submit">Print Fortune</button>
-</form>
-<form method="post" action="/momir">
-  <label for="mana_value">Mana Value for Momir:</label>
-  <input id="mana_value" name="mana_value" type="number" step="any" required>
-  <button type="submit">I'm Feeling Lucky</button>
-</form>
-<form method="post" action="/discord">
-  <label>
-    <input type="checkbox" name="illegal_cards" value="enabled" checked>
-    Include illegal cards
-  </label>
-  <input type="submit" value="My little discord">
-</form>
-<form method="post" action="/search">
-  <label for="card_name">Card Name:</label>
-  <input id="card_name" name="card_name" type="text" required>
-  <button type="submit">Search &amp; Print</button>
-</form>
-<form method="post" action="/pack">
-  <label for="pack_type">Pack Type:</label>
-  <select id="pack_type" name="pack_type" required>
-{pack_options}
-  </select>
-  <label for="set_code">Set Code (optional):</label>
-  <input id="set_code" name="set_code" type="text">
-  <button type="submit">Open &amp; Print Pack</button>
-</form>
-<form method="post" action="/deck" enctype="multipart/form-data">
-  <label for="deck_file">Deck List File:</label>
-  <input id="deck_file" name="deck_file" type="file" accept=".txt,text/plain" required>
-  <button type="submit">Upload &amp; Print Deck</button>
-</form>
-<p>{message}</p>
-"""
-
-
-def _pack_options() -> str:
-    """Build the pack dropdown options from the loaded pack config."""
-    return "\n".join(
-        f'    <option value="{loaded_pack.name}">{loaded_pack.display_name} ({loaded_pack.size} cards)</option>'
-        for loaded_pack in pack.PACKS.values()
-    )
-
 
 def _render_page(message: str) -> str:
-    return PAGE.format(message=escape(message), pack_options=_pack_options())
+    return render_template("index.html", message=message, packs=pack.PACKS.values())
 
 
 @app.route("/", methods=["GET", "POST"])

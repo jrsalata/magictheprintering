@@ -1,0 +1,221 @@
+:root {
+  --ink: #120f0c;
+  --parchment: #f8f4e3;
+  --gold: #cca753;
+  --gold-bright: #e0b563;
+  --gold-deep: #8a611f;
+}
+
+:root,
+:root[data-theme="dark"] {
+  --bg: var(--ink);
+  --surface: #211b14;
+  --text: #f5f1e0;
+  --text-muted: #cabf9e;
+  --border: #4a3f30;
+  --heading: var(--gold-bright);
+  --button-bg: var(--gold);
+  --button-bg-hover: var(--gold-bright);
+  --button-text: var(--ink);
+  --message-bg: #33291a;
+  --message-border: var(--gold);
+  --message-text: var(--text);
+  --input-bg: #1a1611;
+  --input-border: var(--border);
+  --focus: #5b9bd5;
+  --accent-colorless: #9a9284;
+  --accent-white: #e8dfc0;
+  --accent-blue: #5b9bd5;
+  --accent-green: #5c9b74;
+  --accent-red: #d97a5e;
+  --accent-gold: var(--gold);
+}
+
+:root[data-theme="light"] {
+  --bg: #fdfcfa;
+  --surface: #ffffff;
+  --text: var(--ink);
+  --text-muted: #5c5240;
+  --border: #d8cba3;
+  --heading: #6b4a1d;
+  --button-bg: var(--gold-deep);
+  --button-bg-hover: #6f4d18;
+  --button-text: #fffefa;
+  --message-bg: #f0e3bd;
+  --message-border: var(--gold-deep);
+  --message-text: var(--text);
+  --input-bg: #fffefa;
+  --input-border: var(--border);
+  --focus: #1e6091;
+  --accent-colorless: #8f887d;
+  --accent-white: #b8a874;
+  --accent-blue: #1e6091;
+  --accent-green: #2f5c3f;
+  --accent-red: #b8402a;
+  --accent-gold: var(--gold-deep);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+  border-bottom: 3px solid var(--border);
+}
+
+.site-header h1 {
+  margin: 0 0 0.25rem;
+  color: var(--heading);
+  font-size: 1.5rem;
+}
+
+.site-header .tagline {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.theme-toggle {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  border-color: var(--heading);
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.message {
+  background: var(--message-bg);
+  border-left: 4px solid var(--message-border);
+  color: var(--message-text);
+  padding: 0.9rem 1.1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top-width: 4px;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(14, 20, 37, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+.card--colorless { border-top-color: var(--accent-colorless); }
+.card--white { border-top-color: var(--accent-white); }
+.card--blue { border-top-color: var(--accent-blue); }
+.card--green { border-top-color: var(--accent-green); }
+.card--red { border-top-color: var(--accent-red); }
+.card--gold { border-top-color: var(--accent-gold); }
+
+.card h2 {
+  margin: 0 0 0.25rem;
+  color: var(--heading);
+  font-size: 1.15rem;
+}
+
+.card p {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.card form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: auto;
+}
+
+.card label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.card label.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: normal;
+}
+
+.card input[type="text"],
+.card input[type="number"],
+.card input[type="file"],
+.card select {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--input-bg);
+}
+
+.card input:focus,
+.card select:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+button {
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--button-bg-hover);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
