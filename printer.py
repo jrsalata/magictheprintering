@@ -37,8 +37,8 @@ def _image_url_to_data_url(image_url: str, rotate: bool = False, timeout: int = 
 		image_bytes = response.read()
 
 	with Image.open(BytesIO(image_bytes)) as image:
-		if rotate:
-			image = image.rotate(90, expand=True)
+		if rotate != 0:
+			image = image.rotate(rotate, expand=True)
 		return _image_to_data_url(image)
 
 
