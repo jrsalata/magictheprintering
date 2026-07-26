@@ -90,6 +90,14 @@ PRINTER_PASSWORD=<your printer password>
 SEARCH_URL=<your card search API URL>
 ```
 
+The port defaults to `5000`. To change it, edit `FLASK_RUN_PORT` in `magictheprintering.service` before installing, or override it after install:
+
+```bash
+sudo systemctl edit magictheprintering
+# Add under [Service]:
+# Environment=FLASK_RUN_PORT=8080
+```
+
 Then install and enable the service:
 
 ```bash
