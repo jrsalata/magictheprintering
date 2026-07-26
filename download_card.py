@@ -1,6 +1,5 @@
 import argparse
 import json
-import os
 import re
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -8,14 +7,9 @@ from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 from http_errors import HttpRequestError
+from scryfall_mock import _mock_aang_enabled, load_mock_aang_card
 
-MOCK_AANG_PATH = Path(__file__).resolve().parent / "sample_data" / "aang.json"
 SCRYFALL_FUZZY_URL = "https://api.scryfall.com/cards/named?fuzzy="
-
-
-def _mock_aang_enabled() -> bool:
-    raw = os.getenv("SCRYFALL_MOCK_AANG", "").strip().lower()
-    return raw in {"1", "true", "yes", "on"}
 
 
 def sanitize_filename(card_name: str) -> str:
@@ -26,11 +20,7 @@ def sanitize_filename(card_name: str) -> str:
 def fetch_card(card_name: str) -> dict:
     if _mock_aang_enabled():
         # Temporary outage fallback: return a known local card payload.
-        try:
-            with MOCK_AANG_PATH.open("r", encoding="utf-8") as file:
-                return json.load(file)
-        except (OSError, json.JSONDecodeError) as err:
-            raise RuntimeError(f"Failed to load mocked Scryfall response from {MOCK_AANG_PATH}: {err}") from err
+        return load_mock_aang_card()
 
     url = f"{SCRYFALL_FUZZY_URL}{quote(card_name)}"
     request = Request(

@@ -1,30 +1,18 @@
 import json
-import os
-from pathlib import Path
 from typing import Any, Union
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from http_errors import HttpRequestError
 import search_builder
-
-MOCK_AANG_PATH = Path(__file__).resolve().parent / "sample_data" / "aang.json"
-
-
-def _mock_aang_enabled() -> bool:
-    raw = os.getenv("SCRYFALL_MOCK_AANG", "").strip().lower()
-    return raw in {"1", "true", "yes", "on"}
+from scryfall_mock import _mock_aang_enabled, load_mock_aang_card
 
 
 def fetch_json(url: str, timeout: int = 10) -> Union[dict[str, Any], list[Any]]:
     """Send a GET request to the given URL and return the parsed JSON body."""
     if _mock_aang_enabled():
         # Temporary outage fallback: return a known local card payload.
-        try:
-            with MOCK_AANG_PATH.open("r", encoding="utf-8") as file:
-                return json.load(file)
-        except (OSError, json.JSONDecodeError) as err:
-            raise RuntimeError(f"Failed to load mocked Scryfall response from {MOCK_AANG_PATH}: {err}") from err
+        return load_mock_aang_card()
 
     request = Request(
         url,
