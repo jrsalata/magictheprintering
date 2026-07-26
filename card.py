@@ -93,15 +93,15 @@ class Face:
             attraction_lights = None
             
         layout = value("layout")
-        saved_typeline = _canonicalize_string(value("type_line"));
+        typeline = _canonicalize_string(value("type_line"));
         if layout is not None:
             if layout in ("case", "saga", "class"):
                 rotate_image = 90
             elif layout in ("flip"):
                 rotate_image = face_number * 180
             elif layout in ("transform"):
-                if "Enchantment" in saved_typeline:
-                    if any(rotatable_type in saved_typeline for rotatable_type in ("Case", "Saga", "Class")):
+                if "Enchantment" in typeline:
+                    if any(rotatable_type in typeline for rotatable_type in ("Case", "Saga", "Class")):
                         rotate_image = 90
                     else:
                         rotate_image = 0
@@ -122,7 +122,7 @@ class Face:
             name=name,
             mana_cost=_canonicalize_string(value("mana_cost")),
             cropped_image=cropped_image,
-            typeline=saved_typeline,
+            typeline=typeline,
             oracle_text=_canonicalize_string(value("oracle_text")),
             flavor_text=_canonicalize_string(value("flavor_text")),
             counter=_canonicalize_string(counter),
