@@ -7,6 +7,7 @@ from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 from http_errors import HttpRequestError
+from scryfall_mock import _mock_aang_enabled, load_mock_aang_card
 
 SCRYFALL_FUZZY_URL = "https://api.scryfall.com/cards/named?fuzzy="
 
@@ -17,6 +18,10 @@ def sanitize_filename(card_name: str) -> str:
 
 
 def fetch_card(card_name: str) -> dict:
+    if _mock_aang_enabled():
+        # Temporary outage fallback: return a known local card payload.
+        return load_mock_aang_card()
+
     url = f"{SCRYFALL_FUZZY_URL}{quote(card_name)}"
     request = Request(
         url,

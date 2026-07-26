@@ -6,8 +6,9 @@ from http_errors import HttpRequestError
 
 
 @pytest.fixture
-def client():
+def client(monkeypatch):
     app.config["TESTING"] = True
+    monkeypatch.setenv("SEARCH_URL", "https://api.example.test")
     with app.test_client() as client:
         yield client
 
