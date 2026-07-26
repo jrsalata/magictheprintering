@@ -86,3 +86,4 @@ On Windows, open **Device Manager → Ports (COM & LPT)** to find the port.
 | `WiFi connected!` | Connection succeeded; IP address and signal strength follow |
 | `Failed to connect to WiFi. Check your credentials in secrets.h.` | Connection timed out; verify SSID and password in `secrets.h` |
 | `WiFi disconnected. Reconnecting...` | Board lost its connection and is attempting to reconnect |
+| `WiFi reconnected!` | Board successfully re-established a lost connection |

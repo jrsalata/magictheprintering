@@ -2,6 +2,10 @@
 #include <WiFi.h>
 #include "secrets.h"
 
+const int RECONNECT_DELAY_MS = 5000;
+
+bool wasConnected = false;
+
 void setup() {
   Serial.begin(115200);
   while (!Serial) {
@@ -29,6 +33,7 @@ void setup() {
     Serial.print("Signal strength (RSSI): ");
     Serial.print(WiFi.RSSI());
     Serial.println(" dBm");
+    wasConnected = true;
   } else {
     Serial.println();
     Serial.println("Failed to connect to WiFi. Check your credentials in secrets.h.");
@@ -36,9 +41,17 @@ void setup() {
 }
 
 void loop() {
-  if (WiFi.status() != WL_CONNECTED) {
+  bool isConnected = WiFi.status() == WL_CONNECTED;
+
+  if (wasConnected && !isConnected) {
     Serial.println("WiFi disconnected. Reconnecting...");
     WiFi.reconnect();
-    delay(5000);
+    delay(RECONNECT_DELAY_MS);
+  } else if (!wasConnected && isConnected) {
+    Serial.println("WiFi reconnected!");
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
   }
+
+  wasConnected = isConnected;
 }
