@@ -76,6 +76,19 @@ String extractMessage(const String &body) {
   return body.substring(start, end);
 }
 
+String decodeHtmlEntities(const String &text) {
+  String decoded = text;
+
+  decoded.replace("&amp;", "&");
+  decoded.replace("&quot;", "\"");
+  decoded.replace("&#39;", "'");
+  decoded.replace("&apos;", "'");
+  decoded.replace("&lt;", "<");
+  decoded.replace("&gt;", ">");
+
+  return decoded;
+}
+
 void callDiscordEndpoint() {
   if (WiFi.status() != WL_CONNECTED) {
     tftPrintMessage("No WiFi", "Check connection");
@@ -103,7 +116,7 @@ void callDiscordEndpoint() {
 
   if (httpCode > 0) {
     String body = http.getString();
-    String message = extractMessage(body);
+    String message = decodeHtmlEntities(extractMessage(body));
     if (message.length() > 0) {
       String cardName = message.startsWith(PRINTED_PREFIX)
           ? message.substring(PRINTED_PREFIX.length())
