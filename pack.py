@@ -100,7 +100,7 @@ class Pack:
                     set_code=set_code,
                 )
                 card = Card.from_json(card_json)
-                opened.append((card, _summarize_card(card, card_json, rarity)))
+                opened.append((card, card.summarize(slot_rarity=rarity.value)))
 
         if print_cards:
             for card, _ in opened:
@@ -122,19 +122,6 @@ def _fetch_random_card(rarity: Rarity, card_type: str = None, set_code: str = No
         builder.add_set_name(set_code)
 
     return fetch_json(builder.build_url_single_card())
-
-
-def _summarize_card(card: Card, card_json: dict, slot_rarity: Rarity) -> dict[str, Any]:
-    return {
-        "name": card.name,
-        "rarity": card_json.get("rarity"),
-        "slot_rarity": slot_rarity.value,
-        "set": card_json.get("set"),
-        "set_name": card_json.get("set_name"),
-        "type_line": card_json.get("type_line"),
-        "mana_cost": card_json.get("mana_cost"),
-        "scryfall_uri": card_json.get("scryfall_uri"),
-    }
 
 
 def _parse_rarity(value: Any, pack_name: str) -> Rarity:

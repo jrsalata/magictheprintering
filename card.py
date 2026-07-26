@@ -168,12 +168,28 @@ class Face:
 
 
 class Card:
-    def __init__(self, faces: list[Face], name: str = None):
+    def __init__(
+        self,
+        faces: list[Face],
+        name: str = None,
+        rarity: str = None,
+        set_code: str = None,
+        set_name: str = None,
+        type_line: str = None,
+        mana_cost: str = None,
+        scryfall_uri: str = None,
+    ):
         if not faces:
             raise ValueError("Card must contain at least one face")
 
         self.faces = faces
         self.name = name or faces[0].name
+        self.rarity = rarity
+        self.set_code = set_code
+        self.set_name = set_name
+        self.type_line = type_line
+        self.mana_cost = mana_cost
+        self.scryfall_uri = scryfall_uri
 
     @classmethod
     def from_json(cls, card_json: dict):
@@ -186,7 +202,35 @@ class Card:
         else:
             faces = [Face.from_json(card_json)]
 
-        return cls(faces=faces, name=card_json.get("name"))
+        return cls(
+            faces=faces,
+            name=card_json.get("name"),
+            rarity=card_json.get("rarity"),
+            set_code=card_json.get("set"),
+            set_name=card_json.get("set_name"),
+            type_line=card_json.get("type_line"),
+            mana_cost=card_json.get("mana_cost"),
+            scryfall_uri=card_json.get("scryfall_uri"),
+        )
+
+    def summarize(self, slot_rarity: str = None) -> dict:
+        """Return the card's metadata as a JSON-friendly dict."""
+        summary = {
+            "name": self.name,
+            "rarity": self.rarity,
+        }
+        if slot_rarity is not None:
+            summary["slot_rarity"] = slot_rarity
+        summary.update(
+            {
+                "set": self.set_code,
+                "set_name": self.set_name,
+                "type_line": self.type_line,
+                "mana_cost": self.mana_cost,
+                "scryfall_uri": self.scryfall_uri,
+            }
+        )
+        return summary
 
     def print(self):
         blocks = []
