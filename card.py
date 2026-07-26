@@ -93,15 +93,17 @@ class Face:
             attraction_lights = None
             
         layout = value("layout")
+        typeline = _canonicalize_string(value("type_line"));
+        rotate_image = 0
         if layout is not None:
             if layout in ("case", "saga", "class"):
                 rotate_image = 90
             elif layout in ("flip"):
                 rotate_image = face_number * 180
-            else:
-                rotate_image = 0
-        else:
-            rotate_image = 0
+            elif layout in ("transform"):
+                if "Enchantment" in typeline:
+                    if any(rotatable_type in typeline for rotatable_type in ("Case", "Saga", "Class")):
+                        rotate_image = 90
             
         color_indicator = value("color_indicator")
         if color_indicator is not None:
@@ -113,7 +115,7 @@ class Face:
             name=name,
             mana_cost=_canonicalize_string(value("mana_cost")),
             cropped_image=cropped_image,
-            typeline=_canonicalize_string(value("type_line")),
+            typeline=typeline,
             oracle_text=_canonicalize_string(value("oracle_text")),
             flavor_text=_canonicalize_string(value("flavor_text")),
             counter=_canonicalize_string(counter),
@@ -204,7 +206,7 @@ class Card:
 
 
 if __name__ == "__main__":
-    sample_name = "Asmoranomardicadaistinaculdacar"
+    sample_name = "crystal fragments"
     sample_response = fetch_card(sample_name)
     save_card_json(sample_response, sample_name)
 
