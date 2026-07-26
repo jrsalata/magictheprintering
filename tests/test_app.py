@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import pytest
 from app import app
 from http_errors import HttpRequestError
@@ -56,6 +58,13 @@ def test_search_form_on_page(client):
     assert b'name="card_name"' in response.data
 
 
+def test_deck_form_on_page(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert b'action="/deck"' in response.data
+    assert b'name="deck_file"' in response.data
+
+
 def test_search_prints_fuzzy_matched_card(client, monkeypatch):
     sent = []
     fetched = []
@@ -100,6 +109,75 @@ def test_search_no_match_shows_scryfall_details(client, monkeypatch):
 
     assert response.status_code == 404
     assert "No cards found matching “not a real card”".encode("utf-8") in response.data
+    assert sent == []
+
+
+def test_deck_prints_all_cards_after_all_lookups_succeed(client, monkeypatch):
+    sent = []
+    fetched = []
+
+    def fake_fetch_card(card_name):
+        fetched.append(card_name)
+        return {"name": card_name, "type_line": "Instant"}
+
+    monkeypatch.setattr("app.fetch_card", fake_fetch_card)
+    monkeypatch.setattr("card.send_print_job", lambda payload: sent.append(payload) or {"success": True})
+
+    response = client.post(
+        "/deck",
+        data={"deck_file": (BytesIO(b"Lightning Bolt\nCounterspell\n"), "deck.txt")},
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 200
+    assert b"Printed 2 cards." in response.data
+    assert fetched == ["Lightning Bolt", "Counterspell"]
+    assert [payload["blocks"][0]["text"] for payload in sent] == ["Lightning Bolt", "Counterspell"]
+
+
+def test_deck_missing_file_returns_400(client):
+    response = client.post("/deck", data={}, content_type="multipart/form-data")
+    assert response.status_code == 400
+    assert b"No deck file provided." in response.data
+
+
+def test_deck_empty_file_returns_400(client):
+    response = client.post(
+        "/deck",
+        data={"deck_file": (BytesIO(b"\n  \n"), "deck.txt")},
+        content_type="multipart/form-data",
+    )
+    assert response.status_code == 400
+    assert b"Deck file did not contain any card names." in response.data
+
+
+def test_deck_lookup_failure_stops_printing(client, monkeypatch):
+    sent = []
+    fetched = []
+
+    def fake_fetch_card(card_name):
+        fetched.append(card_name)
+        if card_name == "Not A Real Card":
+            raise HttpRequestError(
+                source="scryfall",
+                status_code=404,
+                details="No cards found matching “Not A Real Card”",
+                url="https://api.scryfall.com/cards/named?fuzzy=Not%20A%20Real%20Card",
+            )
+        return {"name": card_name, "type_line": "Instant"}
+
+    monkeypatch.setattr("app.fetch_card", fake_fetch_card)
+    monkeypatch.setattr("card.send_print_job", lambda payload: sent.append(payload) or {"success": True})
+
+    response = client.post(
+        "/deck",
+        data={"deck_file": (BytesIO(b"Lightning Bolt\nNot A Real Card\n"), "deck.txt")},
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 404
+    assert "No cards found matching “Not A Real Card”".encode("utf-8") in response.data
+    assert fetched == ["Lightning Bolt", "Not A Real Card"]
     assert sent == []
 
 

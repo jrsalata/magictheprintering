@@ -4,6 +4,9 @@ from download_card import fetch_card, save_card_json
 from printer import _image_url_to_data_url, send_print_job
 
 
+LINE_WIDTH = 48  # effective chars per line at normal text size
+
+
 def _canonicalize_string(s: str) -> str:
     """Convert Unicode characters to canonical ASCII forms.
     
@@ -36,6 +39,7 @@ class Face:
         counter: str = None,
         attraction_lights: str = None,
         rotate_image: int = 0,
+        color_indicator: str = None,
     ):
         self.name = name
         self.mana_cost = mana_cost
@@ -46,6 +50,7 @@ class Face:
         self.counter = counter
         self.attraction_lights = attraction_lights
         self.rotate_image = rotate_image
+        self.color_indicator = color_indicator
         
     @classmethod
     def from_json(cls, face_json: dict, fallback: dict = None, face_number: int = 0):
@@ -97,6 +102,12 @@ class Face:
                 rotate_image = 0
         else:
             rotate_image = 0
+            
+        color_indicator = value("color_indicator")
+        if color_indicator is not None:
+            color_indicator = "{"+"/".join(color_indicator)+"}"
+        else:
+            color_indicator = None
 
         return cls(
             name=name,
@@ -108,6 +119,7 @@ class Face:
             counter=_canonicalize_string(counter),
             attraction_lights=attraction_lights,
             rotate_image=rotate_image,
+            color_indicator=color_indicator,
         )
 
     def _build_blocks(self) -> list[dict]:
@@ -119,17 +131,30 @@ class Face:
         flavor_text_style = {"font": "b", "normal_textsize": True}
         counter_style = {"align": "right", "bold": True, "double_width": True, "double_height": True, "normal_textsize": True}
 
-        LINE_WIDTH = 48  # effective chars per line at normal text size
-
         blocks = []
 
-        name_line = f"{self.name:<{LINE_WIDTH - len(self.mana_cost)}}{self.mana_cost}" if self.mana_cost else self.name
+        if self.mana_cost:
+            mana_len = len(self.mana_cost)
+            position = len(self.name) % LINE_WIDTH
+            remaining = LINE_WIDTH - position
+            # If the mana cost (plus at least one space) fits on the current line,
+            # right-align it there; otherwise put it on a new line.
+            if remaining >= mana_len + 1:
+                padding = remaining - mana_len
+                name_line = self.name + " " * padding + self.mana_cost
+            else:
+                name_line = self.name + "\n" + self.mana_cost.rjust(LINE_WIDTH)
+        else:
+            name_line = self.name
         blocks.append({"type": "text", "text": name_line, "style": typeline_style})
         if self.cropped_image:
             blocks.append({"type": "image", "image": _image_url_to_data_url(self.cropped_image, self.rotate_image), "center": True})
         if self.typeline:
             divider()
-            blocks.append({"type": "text", "text": self.typeline, "style": typeline_style})
+            fullTypeline = self.typeline
+            if self.color_indicator is not None:
+                fullTypeline = self.color_indicator + " " + fullTypeline
+            blocks.append({"type": "text", "text": fullTypeline, "style": typeline_style})
             divider()
         if self.oracle_text:
             blocks.append({"type": "text", "text": self.oracle_text, "style": oracle_text_style})
@@ -179,7 +204,7 @@ class Card:
 
 
 if __name__ == "__main__":
-    sample_name = "nezumi shortfang"
+    sample_name = "Asmoranomardicadaistinaculdacar"
     sample_response = fetch_card(sample_name)
     save_card_json(sample_response, sample_name)
 

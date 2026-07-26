@@ -36,6 +36,11 @@ PAGE = """<!doctype html>
   <input id="card_name" name="card_name" type="text" required>
   <button type="submit">Search &amp; Print</button>
 </form>
+<form method="post" action="/deck" enctype="multipart/form-data">
+  <label for="deck_file">Deck List File:</label>
+  <input id="deck_file" name="deck_file" type="file" accept=".txt,text/plain" required>
+  <button type="submit">Upload &amp; Print Deck</button>
+</form>
 <p>{message}</p>
 """
 
@@ -107,6 +112,39 @@ def submit_search():
     except HttpRequestError as err:
         if err.status_code == 404:
             message = err.details or f"No card found matching {card_name!r}."
+            return PAGE.format(message=escape(message)), 404
+        _print_http_error_receipt(err)
+        message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
+        return PAGE.format(message=escape(message)), 502
+    except (RuntimeError, ValueError) as err:
+        message = f"Print failed: {err}"
+        return PAGE.format(message=escape(message)), 500
+
+
+@app.route("/deck", methods=["POST"])
+def submit_deck():
+    uploaded_file = request.files.get("deck_file")
+    if uploaded_file is None or not uploaded_file.filename:
+        return PAGE.format(message=escape("No deck file provided.")), 400
+
+    try:
+        deck_text = uploaded_file.read().decode("utf-8")
+    except UnicodeDecodeError:
+        return PAGE.format(message=escape("Deck file must be valid UTF-8 text.")), 400
+
+    card_names = [line.strip() for line in deck_text.splitlines() if line.strip()]
+    if not card_names:
+        return PAGE.format(message=escape("Deck file did not contain any card names.")), 400
+
+    try:
+        cards = [Card.from_json(fetch_card(card_name)) for card_name in card_names]
+        for card in cards:
+            card.print()
+        message = f"Printed {len(cards)} cards."
+        return PAGE.format(message=escape(message))
+    except HttpRequestError as err:
+        if err.status_code == 404:
+            message = err.details or "One or more cards in the deck could not be found."
             return PAGE.format(message=escape(message)), 404
         _print_http_error_receipt(err)
         message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
