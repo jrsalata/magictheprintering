@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include "secrets.h"
 
 const int RECONNECT_DELAY_MS = 5000;
@@ -38,10 +39,27 @@ void callDiscordEndpoint() {
     return;
   }
 
+  String endpointUrl = String(SERVER_URL) + "/discord";
+
   HTTPClient http;
-  http.begin(String(SERVER_URL) + "/discord");
+  WiFiClientSecure secureClient;
+
+  if (endpointUrl.startsWith("https://")) {
+    // Debug-only: allow TLS connection without pinning a certificate.
+    secureClient.setInsecure();
+    http.begin(secureClient, endpointUrl);
+  } else {
+    http.begin(endpointUrl);
+  }
+
+  http.setAuthorization(PRINTER_USERNAME, PRINTER_PASSWORD);
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");
   int httpCode = http.POST("");
+
+  if (httpCode > 0) {
+    http.getString();
+  }
+
   http.end();
 }
 

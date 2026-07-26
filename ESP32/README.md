@@ -22,6 +22,9 @@ Edit `include/secrets.h` and replace the placeholder values:
 ```cpp
 #define WIFI_SSID "your_wifi_ssid"
 #define WIFI_PASSWORD "your_wifi_password"
+#define SERVER_URL "https://your-server-host"
+#define PRINTER_USERNAME "your_auth_username"
+#define PRINTER_PASSWORD "your_auth_password"
 ```
 
 `secrets.h` is listed in `.gitignore` and will **not** be committed to version control.
