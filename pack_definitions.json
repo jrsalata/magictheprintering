@@ -1,0 +1,23 @@
+{
+  "packs": [
+    {
+      "name": "draft_booster",
+      "display_name": "Draft Booster",
+      "slots": [
+        { "count": 10, "rarity": "common" },
+        { "count": 3, "rarity": "uncommon" },
+        { "count": 1, "rarity": "rare", "upgrade": { "rarity": "mythic", "chance": 0.125 } },
+        { "count": 1, "rarity": "common", "card_type": "basic" }
+      ]
+    },
+    {
+      "name": "mini_pack",
+      "display_name": "Mini Pack",
+      "slots": [
+        { "count": 3, "rarity": "common" },
+        { "count": 1, "rarity": "uncommon" },
+        { "count": 1, "rarity": "rare", "upgrade": { "rarity": "mythic", "chance": 0.125 } }
+      ]
+    }
+  ]
+}

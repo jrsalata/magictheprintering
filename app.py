@@ -9,14 +9,9 @@ from search_builder import SearchBuilder
 from search_results import fetch_json
 from card import Card
 from download_card import fetch_card
-from pack import PACKS
+import pack
 
 app = Flask(__name__)
-
-_PACK_OPTIONS = "\n".join(
-    f'    <option value="{pack.name}">{pack.display_name} ({pack.size} cards)</option>'
-    for pack in PACKS.values()
-)
 
 PAGE = """<!doctype html>
 <title>Magic the Printering</title>
@@ -45,14 +40,26 @@ PAGE = """<!doctype html>
 <form method="post" action="/pack">
   <label for="pack_type">Pack Type:</label>
   <select id="pack_type" name="pack_type" required>
-__PACK_OPTIONS__
+{pack_options}
   </select>
   <label for="set_code">Set Code (optional):</label>
   <input id="set_code" name="set_code" type="text">
   <button type="submit">Open &amp; Print Pack</button>
 </form>
 <p>{message}</p>
-""".replace("__PACK_OPTIONS__", _PACK_OPTIONS)
+"""
+
+
+def _pack_options() -> str:
+    """Build the pack dropdown options from the loaded pack config."""
+    return "\n".join(
+        f'    <option value="{loaded_pack.name}">{loaded_pack.display_name} ({loaded_pack.size} cards)</option>'
+        for loaded_pack in pack.PACKS.values()
+    )
+
+
+def _render_page(message: str) -> str:
+    return PAGE.format(message=escape(message), pack_options=_pack_options())
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -76,7 +83,7 @@ def print_page():
         except (RuntimeError, ValueError) as err:
             message = f"Print failed: {err}"
     
-    return PAGE.format(message=escape(message))
+    return _render_page(message)
 
 
 @app.route("/momir", methods=["POST"])
@@ -86,7 +93,7 @@ def submit_momir():
         mana_value = int(raw)
     except ValueError:
         message = f"Invalid mana value: {raw!r}" if raw else "No mana value provided."
-        return PAGE.format(message=escape(message)), 400
+        return _render_page(message), 400
 
     try:
         builder = SearchBuilder()
@@ -97,38 +104,38 @@ def submit_momir():
         card = Card.from_json(json)
         card.print()
         message = f"Printed {card.name}"
-        return PAGE.format(message=escape(message))
+        return _render_page(message)
     except HttpRequestError as err:
         _print_http_error_receipt(err)
         message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
-        return PAGE.format(message=escape(message)), 502
+        return _render_page(message), 502
     except (RuntimeError, ValueError) as err:
         message = f"Print failed: {err}"
-        return PAGE.format(message=escape(message)), 500
+        return _render_page(message), 500
 
 
 @app.route("/search", methods=["POST"])
 def submit_search():
     card_name = request.form.get("card_name", "").strip()
     if not card_name:
-        return PAGE.format(message=escape("No card name provided.")), 400
+        return _render_page("No card name provided."), 400
 
     try:
         card_json = fetch_card(card_name)
         card = Card.from_json(card_json)
         card.print()
         message = f"Printed {card.name}"
-        return PAGE.format(message=escape(message))
+        return _render_page(message)
     except HttpRequestError as err:
         if err.status_code == 404:
             message = err.details or f"No card found matching {card_name!r}."
-            return PAGE.format(message=escape(message)), 404
+            return _render_page(message), 404
         _print_http_error_receipt(err)
         message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
-        return PAGE.format(message=escape(message)), 502
+        return _render_page(message), 502
     except (RuntimeError, ValueError) as err:
         message = f"Print failed: {err}"
-        return PAGE.format(message=escape(message)), 500
+        return _render_page(message), 500
 
 
 def _print_http_error_receipt(err: HttpRequestError) -> None:
@@ -142,26 +149,26 @@ def _print_http_error_receipt(err: HttpRequestError) -> None:
 
 @app.route("/packs", methods=["GET"])
 def list_packs():
-    return jsonify({"packs": [pack.to_dict() for pack in PACKS.values()]})
+    return jsonify({"packs": [loaded_pack.to_dict() for loaded_pack in pack.PACKS.values()]})
 
 
 @app.route("/packs/<pack_type>", methods=["POST"])
 def open_pack(pack_type):
-    pack = PACKS.get(pack_type)
-    if pack is None:
+    selected_pack = pack.PACKS.get(pack_type)
+    if selected_pack is None:
         return jsonify({
             "error": f"Unknown pack type: {pack_type!r}",
-            "available_packs": sorted(PACKS),
+            "available_packs": sorted(pack.PACKS),
         }), 404
 
     body = request.get_json(silent=True) or {}
     set_code = (body.get("set") or request.form.get("set") or request.args.get("set") or "").strip() or None
 
     try:
-        cards = pack.open(set_code=set_code, print_cards=True)
+        cards = selected_pack.open(set_code=set_code, print_cards=True)
         return jsonify({
-            "pack_type": pack.name,
-            "display_name": pack.display_name,
+            "pack_type": selected_pack.name,
+            "display_name": selected_pack.display_name,
             "set": set_code,
             "printed_count": len(cards),
             "cards": cards,
@@ -181,28 +188,28 @@ def open_pack(pack_type):
 @app.route("/pack", methods=["POST"])
 def submit_pack():
     pack_type = request.form.get("pack_type", "").strip()
-    pack = PACKS.get(pack_type)
-    if pack is None:
+    selected_pack = pack.PACKS.get(pack_type)
+    if selected_pack is None:
         message = f"Unknown pack type: {pack_type!r}" if pack_type else "No pack type provided."
-        return PAGE.format(message=escape(message)), 400
+        return _render_page(message), 400
 
     set_code = request.form.get("set_code", "").strip() or None
 
     try:
-        cards = pack.open(set_code=set_code, print_cards=True)
+        cards = selected_pack.open(set_code=set_code, print_cards=True)
         card_names = ", ".join(card["name"] for card in cards)
-        message = f"Opened {pack.display_name} and printed {len(cards)} cards: {card_names}"
-        return PAGE.format(message=escape(message))
+        message = f"Opened {selected_pack.display_name} and printed {len(cards)} cards: {card_names}"
+        return _render_page(message)
     except HttpRequestError as err:
         if err.status_code == 404:
             message = err.details or f"No cards found for pack type {pack_type!r}."
-            return PAGE.format(message=escape(message)), 404
+            return _render_page(message), 404
         _print_http_error_receipt(err)
         message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
-        return PAGE.format(message=escape(message)), 502
+        return _render_page(message), 502
     except (RuntimeError, ValueError) as err:
         message = f"Print failed: {err}"
-        return PAGE.format(message=escape(message)), 500
+        return _render_page(message), 500
 
 
 @app.route("/discord", methods=["POST"])
@@ -221,7 +228,7 @@ def submit_discord():
     response = card.print()
     message = f"Printed {card.name}"
 
-    return PAGE.format(message=escape(message))
+    return _render_page(message)
 
 if __name__ == "__main__":
     app.run()
