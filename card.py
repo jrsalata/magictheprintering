@@ -39,6 +39,7 @@ class Face:
         counter: str = None,
         attraction_lights: str = None,
         rotate_image: bool = False,
+        color_indicator: str = None,
     ):
         self.name = name
         self.mana_cost = mana_cost
@@ -49,6 +50,7 @@ class Face:
         self.counter = counter
         self.attraction_lights = attraction_lights
         self.rotate_image = rotate_image
+        self.color_indicator = color_indicator
         
     @classmethod
     def from_json(cls, face_json: dict, fallback: dict = None):
@@ -95,6 +97,12 @@ class Face:
             rotate_image = layout in ("case", "saga", "class")
         else:
             rotate_image = False
+            
+        color_indicator = value("color_indicator")
+        if color_indicator is not None:
+            color_indicator = "{"+"/".join(color_indicator)+"}"
+        else:
+            color_indicator = None
 
         return cls(
             name=name,
@@ -106,6 +114,7 @@ class Face:
             counter=_canonicalize_string(counter),
             attraction_lights=attraction_lights,
             rotate_image=rotate_image,
+            color_indicator=color_indicator,
         )
 
     def _build_blocks(self) -> list[dict]:
@@ -137,7 +146,10 @@ class Face:
             blocks.append({"type": "image", "image": _image_url_to_data_url(self.cropped_image, self.rotate_image), "center": True})
         if self.typeline:
             divider()
-            blocks.append({"type": "text", "text": self.typeline, "style": typeline_style})
+            fullTypeline = self.typeline
+            if self.color_indicator is not None:
+                fullTypeline = self.color_indicator + " " + fullTypeline
+            blocks.append({"type": "text", "text": fullTypeline, "style": typeline_style})
             divider()
         if self.oracle_text:
             blocks.append({"type": "text", "text": self.oracle_text, "style": oracle_text_style})
@@ -187,7 +199,7 @@ class Card:
 
 
 if __name__ == "__main__":
-    sample_name = "sokka, bold boomeranger"
+    sample_name = "Asmoranomardicadaistinaculdacar"
     sample_response = fetch_card(sample_name)
     save_card_json(sample_response, sample_name)
 
