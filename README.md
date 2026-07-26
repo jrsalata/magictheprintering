@@ -76,3 +76,32 @@ Template resolution order is:
 2. status family (example: `4xx.json`)
 3. `http/default.json`
 4. `default.json`
+
+## Running as a Service (Linux / systemd)
+
+A `magictheprintering.service` unit file is included in the project root.
+
+Before installing, ensure a `.env` file exists in the deployment directory with the required environment variables:
+
+```
+PRINTER_URL=<your printer URL>
+PRINTER_USERNAME=<your printer username>
+PRINTER_PASSWORD=<your printer password>
+SEARCH_URL=<your card search API URL>
+```
+
+Then install and enable the service:
+
+```bash
+sudo cp magictheprintering.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now magictheprintering
+```
+
+Check that it started successfully:
+
+```bash
+sudo systemctl status magictheprintering
+```
+
+The app will be available at `http://<host-ip>:5000`.
