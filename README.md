@@ -45,7 +45,7 @@ Example:
 from printer import build_hello_world_blocks
 
 payload = build_hello_world_blocks(
-	"https://cards.scryfall.io/art_crop/front/d/e/de7a150b-1b0d-4928-a2cc-80a4b7412350.jpg?1783904837"
+    "https://cards.scryfall.io/art_crop/front/d/e/de7a150b-1b0d-4928-a2cc-80a4b7412350.jpg?1783904837"
 )
 ```
 
@@ -83,7 +83,7 @@ A `magictheprintering.service` unit file is included in the project root.
 
 Before installing, ensure a `.env` file exists in the deployment directory with the required environment variables:
 
-```
+```text
 PRINTER_URL=<your printer URL>
 PRINTER_USERNAME=<your printer username>
 PRINTER_PASSWORD=<your printer password>

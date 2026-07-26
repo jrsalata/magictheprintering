@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Magic the Printering</title>
+  <script>
+    if (localStorage.getItem("theme") === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <div>
+      <h1>Magic the Printering</h1>
+      <p class="tagline">Print Magic: The Gathering cards straight to your receipt printer.</p>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" type="button">Light mode</button>
+  </header>
+
+  <main>
+    {% if message %}
+    <div class="message">{{ message }}</div>
+    {% endif %}
+
+    <div class="card-grid">
+      <section class="card card--colorless">
+        <h2>Quick Print</h2>
+        <p>Test the printer with a simple message.</p>
+        <form method="post" action="/">
+          <div class="actions">
+            <button value="hello" name="action" type="submit">Print Hello World</button>
+            <button value="fortune" name="action" type="submit">Print Fortune</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card card--white">
+        <h2>My Little Discord</h2>
+        <p>Print a random card for the community.</p>
+        <form method="post" action="/discord">
+          <label class="checkbox">
+            <input type="checkbox" name="illegal_cards" value="enabled" checked>
+            Include illegal cards
+          </label>
+          <button type="submit">Print Random Card</button>
+        </form>
+      </section>
+
+      <section class="card card--green">
+        <h2>Momir</h2>
+        <p>Print a random creature at the given mana value.</p>
+        <form method="post" action="/momir">
+          <label for="mana_value">Mana Value</label>
+          <input id="mana_value" name="mana_value" type="number" step="any" required>
+          <button type="submit">I'm Feeling Lucky</button>
+        </form>
+      </section>
+
+      <section class="card card--gold">
+        <h2>Open a Pack</h2>
+        <p>Open a booster pack and print every card inside.</p>
+        <form method="post" action="/pack">
+          <label for="pack_type">Pack Type</label>
+          <select id="pack_type" name="pack_type" required>
+            {% for loaded_pack in packs %}
+            <option value="{{ loaded_pack.name }}">{{ loaded_pack.display_name }} ({{ loaded_pack.size }} cards)</option>
+            {% endfor %}
+          </select>
+          <label for="set_code">Set Code (optional)</label>
+          <input id="set_code" name="set_code" type="text" placeholder="e.g. MH3">
+          <button type="submit">Open &amp; Print Pack</button>
+        </form>
+      </section>
+
+      <section class="card card--blue">
+        <h2>Search &amp; Print</h2>
+        <p>Find a card by name and print it.</p>
+        <form method="post" action="/search">
+          <label for="card_name">Card Name</label>
+          <input id="card_name" name="card_name" type="text" placeholder="e.g. Lightning Bolt" required>
+          <button type="submit">Search &amp; Print</button>
+        </form>
+      </section>
+
+      <section class="card card--red">
+        <h2>Print a Deck</h2>
+        <p>Upload a plain text deck list, one card name per line.</p>
+        <form method="post" action="/deck" enctype="multipart/form-data">
+          <label for="deck_file">Deck List File</label>
+          <input id="deck_file" name="deck_file" type="file" accept=".txt,text/plain" required>
+          <button type="submit">Upload &amp; Print Deck</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>
