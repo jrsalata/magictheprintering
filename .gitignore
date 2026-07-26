@@ -218,3 +218,7 @@ __marimo__/
 .streamlit/secrets.toml
 
 sample_data/*
+ESP32/.vscode/launch.json
+.gitignore
+ESP32/.vscode/extensions.json
+ESP32/.vscode/c_cpp_properties.json
