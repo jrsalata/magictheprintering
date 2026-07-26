@@ -1,5 +1,10 @@
 from flask import Flask, jsonify, render_template, request
 
+from enums.color import Color
+from enums.comparison import Comparison
+from enums.format import Format
+from enums.rarity import Rarity
+from enums.typeline import TypeLine
 from error_receipt import build_http_error_receipt
 from http_errors import HttpRequestError
 from printer import build_hello_world_blocks, send_print_job, build_message
@@ -14,7 +19,28 @@ app = Flask(__name__)
 
 
 def _render_page(message: str) -> str:
-    return render_template("index.html", message=message, packs=pack.PACKS.values())
+    return render_template(
+        "index.html",
+        message=message,
+        packs=pack.PACKS.values(),
+        type_lines=TypeLine,
+        colors=Color,
+        rarities=Rarity,
+        formats=Format,
+        comparisons=Comparison,
+    )
+
+
+def _parse_optional_enum(enum_cls, raw: str, field_name: str):
+    """Parse an optional enum form field; blank input means "no filter"."""
+    raw = (raw or "").strip()
+    if not raw:
+        return None
+    try:
+        return enum_cls(raw)
+    except ValueError:
+        valid = ", ".join(member.value for member in enum_cls)
+        raise ValueError(f"Invalid {field_name}: {raw!r} (expected one of: {valid})") from None
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -84,6 +110,76 @@ def submit_search():
     except HttpRequestError as err:
         if err.status_code == 404:
             message = err.details or f"No card found matching {card_name!r}."
+            return _render_page(message), 404
+        _print_http_error_receipt(err)
+        message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
+        return _render_page(message), 502
+    except (RuntimeError, ValueError) as err:
+        message = f"Print failed: {err}"
+        return _render_page(message), 500
+
+
+@app.route("/filter", methods=["POST"])
+def submit_filter():
+    try:
+        mana_value_comparison = _parse_optional_enum(
+            Comparison, request.form.get("mana_value_comparison"), "mana value comparison"
+        ) or Comparison.EQUAL
+        rarity_comparison = _parse_optional_enum(
+            Comparison, request.form.get("rarity_comparison"), "rarity comparison"
+        ) or Comparison.EQUAL
+        rarity = _parse_optional_enum(Rarity, request.form.get("rarity"), "rarity")
+        format_value = _parse_optional_enum(Format, request.form.get("format"), "format")
+        colors = [Color(value) for value in request.form.getlist("colors")]
+    except ValueError as err:
+        return _render_page(str(err)), 400
+
+    mana_value_raw = request.form.get("mana_value", "").strip()
+    mana_value = None
+    if mana_value_raw:
+        try:
+            mana_value = int(mana_value_raw)
+        except ValueError:
+            return _render_page(f"Invalid mana value: {mana_value_raw!r}"), 400
+
+    builder = SearchBuilder()
+
+    card_type = request.form.get("card_type", "").strip()
+    if card_type:
+        builder.add_card_type(card_type)
+
+    exclude_card_type = request.form.get("exclude_card_type", "").strip()
+    if exclude_card_type:
+        builder.add_exclude_card_type(exclude_card_type)
+
+    if mana_value is not None:
+        builder.add_mana_value(mana_value, mana_value_comparison)
+
+    if colors:
+        builder.add_color(colors)
+
+    if rarity is not None:
+        builder.add_rarity(rarity, rarity_comparison)
+
+    if format_value is not None:
+        builder.add_format(format_value)
+
+    if request.form.get("exclude_lands") == "enabled":
+        builder.add_exclude_lands()
+
+    set_name = request.form.get("set_name", "").strip()
+    if set_name:
+        builder.add_set_name(set_name)
+
+    try:
+        card_json = fetch_json(builder.build_url_single_card())
+        card = Card.from_json(card_json)
+        card.print()
+        message = f"Printed {card.name}"
+        return _render_page(message)
+    except HttpRequestError as err:
+        if err.status_code == 404:
+            message = err.details or "No cards found matching those filters."
             return _render_page(message), 404
         _print_http_error_receipt(err)
         message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."

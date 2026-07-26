@@ -6,8 +6,9 @@ from http_errors import HttpRequestError
 
 
 @pytest.fixture
-def client():
+def client(monkeypatch):
     app.config["TESTING"] = True
+    monkeypatch.setenv("SEARCH_URL", "https://api.example.test")
     with app.test_client() as client:
         yield client
 
@@ -63,6 +64,15 @@ def test_deck_form_on_page(client):
     assert response.status_code == 200
     assert b'action="/deck"' in response.data
     assert b'name="deck_file"' in response.data
+
+
+def test_filter_form_on_page(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert b'action="/filter"' in response.data
+    assert b'name="colors"' in response.data
+    assert b'name="rarity"' in response.data
+    assert b'name="format"' in response.data
 
 
 def test_search_prints_fuzzy_matched_card(client, monkeypatch):
@@ -179,6 +189,68 @@ def test_deck_lookup_failure_stops_printing(client, monkeypatch):
     assert "No cards found matching “Not A Real Card”".encode("utf-8") in response.data
     assert fetched == ["Lightning Bolt", "Not A Real Card"]
     assert sent == []
+
+
+def test_filter_prints_matching_card(client, monkeypatch):
+    sent = []
+    seen_urls = []
+
+    def fake_fetch_json(url):
+        seen_urls.append(url)
+        return {"name": "Llanowar Elves", "type_line": "Creature — Elf Druid"}
+
+    monkeypatch.setattr("app.fetch_json", fake_fetch_json)
+    monkeypatch.setattr("card.send_print_job", lambda payload: sent.append(payload) or {"success": True})
+
+    response = client.post(
+        "/filter",
+        data={
+            "card_type": "creature",
+            "mana_value_comparison": "=",
+            "mana_value": "1",
+            "colors": ["g"],
+            "rarity_comparison": "=",
+            "rarity": "common",
+            "format": "commander",
+            "exclude_lands": "enabled",
+        },
+    )
+
+    assert response.status_code == 200
+    assert b"Printed Llanowar Elves" in response.data
+    assert len(seen_urls) == 1
+    query = seen_urls[0]
+    assert "t%3Acreature" in query
+    assert "mv%3D1" in query
+    assert "c%3Ag" in query
+    assert "r%3Dcommon" in query
+    assert "f%3Acommander" in query
+    assert "-type%3Aland" in query
+    assert len(sent) == 1
+    assert sent[0]["blocks"][0]["text"] == "Llanowar Elves"
+
+
+def test_filter_invalid_rarity_returns_400(client):
+    response = client.post("/filter", data={"rarity": "legendary"})
+    assert response.status_code == 400
+    assert b"Invalid rarity" in response.data
+
+
+def test_filter_no_match_shows_404(client, monkeypatch):
+    def fake_fetch_json(_url):
+        raise HttpRequestError(
+            source="search_results",
+            status_code=404,
+            details="No cards found",
+            url="https://api.example.test/random",
+        )
+
+    monkeypatch.setattr("app.fetch_json", fake_fetch_json)
+
+    response = client.post("/filter", data={"card_type": "sorcery"})
+
+    assert response.status_code == 404
+    assert b"No cards found" in response.data
 
 
 def test_search_http_error_prints_error_receipt(client, monkeypatch):

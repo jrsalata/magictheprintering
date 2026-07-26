@@ -8,7 +8,7 @@ import search_builder
 from scryfall_mock import _mock_aang_enabled, load_mock_aang_card
 
 
-def fetch_json(url: str, timeout: int = 10) -> Union[dict[str, Any], list[Any]]:
+def fetch_json(url: str, timeout: int = 1000) -> Union[dict[str, Any], list[Any]]:
     """Send a GET request to the given URL and return the parsed JSON body."""
     if _mock_aang_enabled():
         # Temporary outage fallback: return a known local card payload.

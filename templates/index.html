@@ -94,6 +94,94 @@
           <button type="submit">Upload &amp; Print Deck</button>
         </form>
       </section>
+
+      <section class="card card--multi card--wide">
+        <h2>Custom Filter</h2>
+        <p>Build your own criteria and print a random matching card.</p>
+        <form method="post" action="/filter">
+          <div class="filter-grid">
+            <div class="filter-field">
+              <label for="card_type">Card Type</label>
+              <select id="card_type" name="card_type">
+                <option value="">Any</option>
+                {% for type_line in type_lines %}
+                <option value="{{ type_line.value }}">{{ type_line.value|capitalize }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label for="exclude_card_type">Exclude Type</label>
+              <input id="exclude_card_type" name="exclude_card_type" type="text" placeholder="e.g. land">
+            </div>
+
+            <div class="filter-field">
+              <label for="mana_value">Mana Value</label>
+              <div class="filter-inline">
+                <select id="mana_value_comparison" name="mana_value_comparison">
+                  {% for comparison in comparisons %}
+                  <option value="{{ comparison.value }}">{{ comparison.value }}</option>
+                  {% endfor %}
+                </select>
+                <input id="mana_value" name="mana_value" type="number" step="1">
+              </div>
+            </div>
+
+            <div class="filter-field">
+              <label for="rarity">Rarity</label>
+              <div class="filter-inline">
+                <select id="rarity_comparison" name="rarity_comparison">
+                  {% for comparison in comparisons %}
+                  <option value="{{ comparison.value }}">{{ comparison.value }}</option>
+                  {% endfor %}
+                </select>
+                <select id="rarity" name="rarity">
+                  <option value="">Any</option>
+                  {% for rarity in rarities %}
+                  <option value="{{ rarity.value }}">{{ rarity.value|capitalize }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="filter-field">
+              <label for="format">Legal In Format</label>
+              <select id="format" name="format">
+                <option value="">Any</option>
+                {% for format in formats %}
+                <option value="{{ format.value }}">{{ format.name|replace('_', ' ')|title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label for="set_name">Set Code</label>
+              <input id="set_name" name="set_name" type="text" placeholder="e.g. MH3">
+            </div>
+
+            <div class="filter-field filter-field--wide">
+              <label>Colors</label>
+              <div class="filter-colors">
+                {% for color in colors %}
+                <label class="checkbox">
+                  <input type="checkbox" name="colors" value="{{ color.value }}">
+                  {{ color.name|capitalize }}
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="filter-field">
+              <label class="checkbox">
+                <input type="checkbox" name="exclude_lands" value="enabled">
+                Exclude lands
+              </label>
+            </div>
+          </div>
+
+          <button type="submit">Print Matching Card</button>
+        </form>
+      </section>
     </div>
   </main>
 
