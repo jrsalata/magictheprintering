@@ -175,8 +175,6 @@ class Card:
         rarity: str = None,
         set_code: str = None,
         set_name: str = None,
-        type_line: str = None,
-        mana_cost: str = None,
         scryfall_uri: str = None,
     ):
         if not faces:
@@ -187,8 +185,6 @@ class Card:
         self.rarity = rarity
         self.set_code = set_code
         self.set_name = set_name
-        self.type_line = type_line
-        self.mana_cost = mana_cost
         self.scryfall_uri = scryfall_uri
 
     @classmethod
@@ -208,8 +204,6 @@ class Card:
             rarity=card_json.get("rarity"),
             set_code=card_json.get("set"),
             set_name=card_json.get("set_name"),
-            type_line=card_json.get("type_line"),
-            mana_cost=card_json.get("mana_cost"),
             scryfall_uri=card_json.get("scryfall_uri"),
         )
 
@@ -225,8 +219,8 @@ class Card:
             {
                 "set": self.set_code,
                 "set_name": self.set_name,
-                "type_line": self.type_line,
-                "mana_cost": self.mana_cost,
+                "type_line": " // ".join(face.typeline for face in self.faces if face.typeline) or None,
+                "mana_cost": " // ".join(face.mana_cost for face in self.faces if face.mana_cost) or None,
                 "scryfall_uri": self.scryfall_uri,
             }
         )
