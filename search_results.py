@@ -5,35 +5,40 @@ from urllib.request import Request, urlopen
 
 from http_errors import HttpRequestError
 import search_builder
+from scryfall_mock import _mock_aang_enabled, load_mock_aang_card
 
 
-def fetch_json(url: str, timeout: int = 10) -> Union[dict[str, Any], list[Any]]:
-	"""Send a GET request to the given URL and return the parsed JSON body."""
-	request = Request(
-		url,
-		method="GET",
-		headers={
-			"Accept": "application/json",
-			"User-Agent": "magictheprintering/1.0",
-		},
-	)
+def fetch_json(url: str, timeout: int = 30) -> Union[dict[str, Any], list[Any]]:
+    """Send a GET request to the given URL and return the parsed JSON body."""
+    if _mock_aang_enabled():
+        # Temporary outage fallback: return a known local card payload.
+        return load_mock_aang_card()
 
-	try:
-		with urlopen(request, timeout=timeout) as response:
-			raw = response.read().decode("utf-8")
-			return json.loads(raw)
-	except json.JSONDecodeError as err:
-		raise RuntimeError("GET response was not valid JSON") from err
-	except HTTPError as err:
-		details = err.read().decode("utf-8", errors="replace")
-		raise HttpRequestError(
-			source="search_results",
-			status_code=err.code,
-			details=details,
-			url=url,
-		) from err
-	except URLError as err:
-		raise RuntimeError(f"Failed to connect to URL: {err.reason}") from err
+    request = Request(
+        url,
+        method="GET",
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "magictheprintering/1.0",
+        },
+    )
+
+    try:
+        with urlopen(request, timeout=timeout) as response:
+            raw = response.read().decode("utf-8")
+            return json.loads(raw)
+    except json.JSONDecodeError as err:
+        raise RuntimeError("GET response was not valid JSON") from err
+    except HTTPError as err:
+        details = err.read().decode("utf-8", errors="replace")
+        raise HttpRequestError(
+            source="search_results",
+            status_code=err.code,
+            details=details,
+            url=url,
+        ) from err
+    except URLError as err:
+        raise RuntimeError(f"Failed to connect to URL: {err.reason}") from err
 
 
 if __name__ == "__main__":
