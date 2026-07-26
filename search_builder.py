@@ -1,17 +1,38 @@
 import os
 from dotenv import load_dotenv
 from urllib.parse import quote
+from urllib.parse import urlsplit, urlunsplit
 import enums.color as Color
 import enums.comparison as Comparison
 import enums.rarity as Rarity
 import enums.typeline as TypeLine
 import enums.format as Format
+
+
+def _normalize_search_base_url(raw_url: str) -> str:
+    """Accept either an API host or an endpoint URL and return the API base."""
+    candidate = (raw_url or "").strip().rstrip("/")
+    if not candidate:
+        return ""
+
+    parts = urlsplit(candidate)
+    path = parts.path.rstrip("/")
+
+    for suffix in ("/cards/search", "/cards/random", "/cards"):
+        if path.endswith(suffix):
+            path = path[: -len(suffix)]
+            break
+
+    return urlunsplit((parts.scheme, parts.netloc, path, "", ""))
+
+
 class SearchBuilder:
     STATIC_TEXT = "unique:cards -has:flavor_name game:paper -is:extra"
     raw_query = STATIC_TEXT
+
     def __init__(self):
         load_dotenv()
-        self.search_url = os.getenv("SEARCH_URL", "").strip()
+        self.search_url = _normalize_search_base_url(os.getenv("SEARCH_URL", ""))
 
         if not self.search_url:
             raise ValueError("Missing required environment variable: SEARCH_URL")
