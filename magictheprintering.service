@@ -1,0 +1,15 @@
+[Unit]
+Description=Magic the Printering Flask App
+After=network.target
+
+[Service]
+Type=simple
+User=jrsalata
+WorkingDirectory=/home/jrsalata/magictheprintering
+Environment=FLASK_RUN_PORT=5000
+ExecStart=/home/jrsalata/magictheprintering/.venv/bin/flask run --host=0.0.0.0
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

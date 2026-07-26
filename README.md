@@ -76,3 +76,40 @@ Template resolution order is:
 2. status family (example: `4xx.json`)
 3. `http/default.json`
 4. `default.json`
+
+## Running as a Service (Linux / systemd)
+
+A `magictheprintering.service` unit file is included in the project root.
+
+Before installing, ensure a `.env` file exists in the deployment directory with the required environment variables:
+
+```
+PRINTER_URL=<your printer URL>
+PRINTER_USERNAME=<your printer username>
+PRINTER_PASSWORD=<your printer password>
+SEARCH_URL=<your card search API URL>
+```
+
+The port defaults to `5000`. To change it, edit `FLASK_RUN_PORT` in `magictheprintering.service` before installing, or override it after install:
+
+```bash
+sudo systemctl edit magictheprintering
+# Add under [Service]:
+# Environment=FLASK_RUN_PORT=8080
+```
+
+Then install and enable the service:
+
+```bash
+sudo cp magictheprintering.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now magictheprintering
+```
+
+Check that it started successfully:
+
+```bash
+sudo systemctl status magictheprintering
+```
+
+The app will be available at `http://<host-ip>:5000`.
