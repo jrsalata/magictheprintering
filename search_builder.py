@@ -49,6 +49,9 @@ class SearchBuilder:
     def add_exclude_lands(self) -> None:
         self.raw_query += " -type:land"
 
+    def add_exclude_card_type(self, card_type: str) -> None:
+        self.raw_query += f" -t:{card_type}"
+
     def add_set_name(self, set_name: str) -> None:
         self.raw_query += f" set:{set_name}"
 
