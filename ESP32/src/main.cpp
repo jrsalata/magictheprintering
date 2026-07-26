@@ -12,6 +12,7 @@ const int STATUS_LED_PIN = 13;
 const int LED_BLINK_INTERVAL_MS = 750;
 const int BUTTON_PIN = 0;
 const int DEBOUNCE_DELAY_MS = 50;
+const int HTTP_TIMEOUT_MS = 30000;
 
 // TFT pins for Adafruit Feather ESP32-S3 Reverse TFT
 const int TFT_CS_PIN   = 7;
@@ -95,6 +96,7 @@ void callDiscordEndpoint() {
     http.begin(endpointUrl);
   }
 
+  http.setTimeout(HTTP_TIMEOUT_MS);
   http.setAuthorization(PRINTER_USERNAME, PRINTER_PASSWORD);
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");
   int httpCode = http.POST("");
