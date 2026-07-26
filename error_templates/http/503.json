@@ -1,0 +1,22 @@
+{
+  "blocks": [
+    {
+      "type": "title",
+      "style": {
+        "align": "center"
+      },
+      "text": "(-_-)"
+    },
+    {
+      "type": "title",
+      "style": {
+        "font": "b"
+      },
+      "text": "HTTP 503: Service Unavailable"
+    },
+    {
+      "type": "text",
+      "text": "Scryfall is down...\nAgain...\nHonestly its not our problem"
+    }
+  ]
+}

@@ -88,7 +88,10 @@ def submit_momir():
         return _render_page(message)
     except HttpRequestError as err:
         _print_http_error_receipt(err)
-        message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
+        if err.status_code == 503:
+            message = "Card service is temporarily unavailable. Error receipt sent to printer."
+        else:
+            message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
         return _render_page(message), 502
     except (RuntimeError, ValueError) as err:
         message = f"Print failed: {err}"
@@ -112,7 +115,10 @@ def submit_search():
             message = err.details or f"No card found matching {card_name!r}."
             return _render_page(message), 404
         _print_http_error_receipt(err)
-        message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
+        if err.status_code == 503:
+            message = "Card service is temporarily unavailable. Error receipt sent to printer."
+        else:
+            message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
         return _render_page(message), 502
     except (RuntimeError, ValueError) as err:
         message = f"Print failed: {err}"
@@ -182,7 +188,10 @@ def submit_filter():
             message = err.details or "No cards found matching those filters."
             return _render_page(message), 404
         _print_http_error_receipt(err)
-        message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
+        if err.status_code == 503:
+            message = "Card service is temporarily unavailable. Error receipt sent to printer."
+        else:
+            message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
         return _render_page(message), 502
     except (RuntimeError, ValueError) as err:
         message = f"Print failed: {err}"
@@ -215,7 +224,10 @@ def submit_deck():
             message = err.details or "One or more cards in the deck could not be found."
             return _render_page(message), 404
         _print_http_error_receipt(err)
-        message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
+        if err.status_code == 503:
+            message = "Card service is temporarily unavailable. Error receipt sent to printer."
+        else:
+            message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
         return _render_page(message), 502
     except (RuntimeError, ValueError) as err:
         message = f"Print failed: {err}"
@@ -262,9 +274,11 @@ def open_pack(pack_type):
             message = err.details or f"No cards found for pack type {pack_type!r}."
             return jsonify({"error": message}), 404
         _print_http_error_receipt(err)
-        return jsonify({
-            "error": f"Request failed with HTTP {err.status_code}. Error receipt sent to printer.",
-        }), 502
+        if err.status_code == 503:
+            error_msg = "Card service is temporarily unavailable. Error receipt sent to printer."
+        else:
+            error_msg = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
+        return jsonify({"error": error_msg}), 502
     except (RuntimeError, ValueError) as err:
         return jsonify({"error": f"Failed to open pack: {err}"}), 500
 
@@ -289,7 +303,10 @@ def submit_pack():
             message = err.details or f"No cards found for pack type {pack_type!r}."
             return _render_page(message), 404
         _print_http_error_receipt(err)
-        message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
+        if err.status_code == 503:
+            message = "Card service is temporarily unavailable. Error receipt sent to printer."
+        else:
+            message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
         return _render_page(message), 502
     except (RuntimeError, ValueError) as err:
         message = f"Print failed: {err}"
@@ -307,12 +324,23 @@ def submit_discord():
         
     builder.add_exclude_lands()
     url = builder.build_url_single_card()
-    json = fetch_json(url)
-    card = Card.from_json(json)
-    response = card.print()
-    message = f"Printed {card.name}"
-
-    return _render_page(message)
+    
+    try:
+        json = fetch_json(url)
+        card = Card.from_json(json)
+        card.print()
+        message = f"Printed {card.name}"
+        return _render_page(message)
+    except HttpRequestError as err:
+        _print_http_error_receipt(err)
+        if err.status_code == 503:
+            message = "Card service is temporarily unavailable. Error receipt sent to printer."
+        else:
+            message = f"Request failed with HTTP {err.status_code}. Error receipt sent to printer."
+        return _render_page(message), 502
+    except (RuntimeError, ValueError) as err:
+        message = f"Print failed: {err}"
+        return _render_page(message), 500
 
 if __name__ == "__main__":
     app.run()
