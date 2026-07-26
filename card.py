@@ -94,6 +94,7 @@ class Face:
             
         layout = value("layout")
         typeline = _canonicalize_string(value("type_line"));
+        rotate_image = 0
         if layout is not None:
             if layout in ("case", "saga", "class"):
                 rotate_image = 90
@@ -103,14 +104,6 @@ class Face:
                 if "Enchantment" in typeline:
                     if any(rotatable_type in typeline for rotatable_type in ("Case", "Saga", "Class")):
                         rotate_image = 90
-                    else:
-                        rotate_image = 0
-                else:
-                    rotate_image = 0
-            else:
-                rotate_image = 0
-        else:
-            rotate_image = 0
             
         color_indicator = value("color_indicator")
         if color_indicator is not None:
