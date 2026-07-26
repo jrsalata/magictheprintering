@@ -35,7 +35,7 @@ class Face:
         flavor_text: str = None,
         counter: str = None,
         attraction_lights: str = None,
-        rotate_image: bool = False,
+        rotate_image: int = 0,
     ):
         self.name = name
         self.mana_cost = mana_cost
@@ -48,7 +48,7 @@ class Face:
         self.rotate_image = rotate_image
         
     @classmethod
-    def from_json(cls, face_json: dict, fallback: dict = None):
+    def from_json(cls, face_json: dict, fallback: dict = None, face_number: int = 0):
         if not isinstance(face_json, dict):
             raise ValueError("Face JSON must be an object")
 
@@ -89,9 +89,14 @@ class Face:
             
         layout = value("layout")
         if layout is not None:
-            rotate_image = layout in ("case", "saga", "class")
+            if layout in ("case", "saga", "class"):
+                rotate_image = 90
+            elif layout in ("flip"):
+                rotate_image = face_number * 180
+            else:
+                rotate_image = 0
         else:
-            rotate_image = False
+            rotate_image = 0
 
         return cls(
             name=name,
@@ -157,7 +162,7 @@ class Card:
 
         face_payloads = card_json.get("card_faces")
         if isinstance(face_payloads, list) and face_payloads:
-            faces = [Face.from_json(face_payload, fallback=card_json) for face_payload in face_payloads]
+            faces = [Face.from_json(face_payload, fallback=card_json, face_number=face_payloads.index(face_payload)) for face_payload in face_payloads]
         else:
             faces = [Face.from_json(card_json)]
 
@@ -174,7 +179,7 @@ class Card:
 
 
 if __name__ == "__main__":
-    sample_name = "sokka, bold boomeranger"
+    sample_name = "nezumi shortfang"
     sample_response = fetch_card(sample_name)
     save_card_json(sample_response, sample_name)
 
